@@ -1145,6 +1145,131 @@
       cursor: not-allowed;
     }
 
+    .modal-buy-btn.demo-state {
+      color: var(--warn);
+      border-color: var(--warn);
+    }
+    .modal-buy-btn.demo-state:hover:not(:disabled) {
+      background: rgba(210, 153, 34, 0.08);
+    }
+
+    /* Owner demo buy button in the card action slot */
+    .demo-buy-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--warn);
+      background: transparent;
+      border: 1px solid var(--warn);
+      padding: 9px 14px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      transition: background 0.12s ease;
+    }
+
+    .demo-buy-btn:hover {
+      background: rgba(210, 153, 34, 0.08);
+    }
+
+    /* =========================================================================
+       DEMO BUY MODAL (owner-only wallet-switch notice)
+       ========================================================================= */
+    .demo-buy-ticket {
+      background: var(--surface);
+      border: 1px solid var(--warn);
+      border-radius: 2px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 0 0 1px rgba(210, 153, 34, 0.1);
+      animation: ticketSlideIn 0.2s ease;
+    }
+
+    .demo-buy-ticket .modal-header {
+      border-bottom-color: var(--border);
+    }
+
+    .demo-buy-ticket .modal-title {
+      color: var(--warn);
+    }
+
+    .demo-buy-body {
+      padding: 28px 28px 24px;
+      text-align: center;
+    }
+
+    .demo-buy-icon {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 44px;
+      color: var(--warn);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .demo-buy-message {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      letter-spacing: 0.3px;
+      margin-bottom: 20px;
+    }
+
+    .demo-buy-price {
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--bg);
+      margin-bottom: 22px;
+    }
+
+    .demo-buy-price-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .demo-buy-price-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+    }
+
+    .demo-buy-price-value .unit {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 6px;
+    }
+
+    .demo-buy-confirm-btn {
+      display: block;
+      width: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--warn);
+      background: transparent;
+      border: 1px solid var(--warn);
+      padding: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 1.2px;
+      transition: background 0.12s ease;
+    }
+
+    .demo-buy-confirm-btn:hover {
+      background: rgba(210, 153, 34, 0.08);
+    }
+
     /* =========================================================================
        TRANSACTION LOG
        ========================================================================= */
@@ -1446,6 +1571,27 @@
           <div class="price-value"><span id="modalPrice">0</span><span class="unit" id="modalPriceUnit">YODA</span></div>
         </div>
         <button id="modalBuyBtn" class="modal-buy-btn" type="button">[ BUY SIGNAL ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo buy modal (owner-only wallet switch notice) -->
+  <div id="demoBuyModal" class="modal-overlay hidden">
+    <div class="demo-buy-ticket">
+      <div class="modal-header">
+        <div class="modal-title">// DEMO BUY — WALLET SWITCH REQUIRED</div>
+        <button class="modal-close" id="demoBuyCloseBtn" type="button">[ X ]</button>
+      </div>
+      <div class="demo-buy-body">
+        <div class="demo-buy-icon">◈</div>
+        <div class="demo-buy-message">
+          Switch to a buyer wallet in MetaMask to complete this purchase.
+        </div>
+        <div class="demo-buy-price">
+          <div class="demo-buy-price-label">This signal is available for:</div>
+          <div class="demo-buy-price-value"><span id="demoBuyAmount">0</span><span class="unit" id="demoBuyUnit">YODA</span></div>
+        </div>
+        <button id="demoBuyConfirmBtn" class="demo-buy-confirm-btn" type="button">[ GOT IT ]</button>
       </div>
     </div>
   </div>
@@ -2053,7 +2199,18 @@
         label.textContent = showOwned ? "// YOURS" : "// SOLD OUT";
         actionSlot.appendChild(label);
       } else if (isContractOwner) {
-        // Owner's own listing: add a SHARE button (Change 2)
+        // Owner's own listing: DEMO BUY (for live demo walkthrough) + SHARE
+        const demoBuyBtn = document.createElement("button");
+        demoBuyBtn.className = "demo-buy-btn";
+        demoBuyBtn.type = "button";
+        demoBuyBtn.textContent = "[ DEMO BUY ]";
+        demoBuyBtn.title = "Owners can't buy their own listing — click to preview the buy flow";
+        demoBuyBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openDemoBuyModal(sig);
+        });
+        actionSlot.appendChild(demoBuyBtn);
+
         const shareBtn = document.createElement("button");
         shareBtn.className = "share-btn";
         shareBtn.type = "button";
@@ -2187,7 +2344,7 @@
       // Price + buy button
       $("modalPrice").textContent = sig.priceInYoda.toString();
       const buyBtn = $("modalBuyBtn");
-      buyBtn.classList.remove("owned-state", "sold-state");
+      buyBtn.classList.remove("owned-state", "sold-state", "demo-state");
       buyBtn.disabled = false;
 
       if (showOwned) {
@@ -2199,9 +2356,11 @@
         buyBtn.classList.add("sold-state");
         buyBtn.disabled = true;
       } else if (isContractOwner) {
-        buyBtn.textContent = "[ YOUR LISTING ]";
-        buyBtn.classList.add("owned-state");
-        buyBtn.disabled = true;
+        // Owner can't actually buy their own listing on-chain, but the
+        // modal button still acts as a demo affordance for the live walkthrough.
+        buyBtn.textContent = "[ DEMO BUY ]";
+        buyBtn.classList.add("demo-state");
+        buyBtn.disabled = false;
       } else {
         buyBtn.textContent = "[ BUY SIGNAL ]";
       }
@@ -2227,9 +2386,41 @@
       if (!modalSignal) return;
       const sig = modalSignal;
       const isContractOwner = userAddress && userAddress.toLowerCase() === contractOwner;
-      if (sig.sold || isContractOwner) return;
+      if (sig.sold) return;
+      if (isContractOwner) {
+        // Owner demo flow: close the detail modal and show the wallet-switch notice
+        closeSignalDetail();
+        openDemoBuyModal(sig);
+        return;
+      }
       closeSignalDetail();
       await handleBuy(sig);
+    });
+
+    // =========================================================================
+    // Demo buy modal (owner-only) — "switch to a buyer wallet" notice
+    // =========================================================================
+    const demoBuyModal = $("demoBuyModal");
+
+    function openDemoBuyModal(sig) {
+      $("demoBuyAmount").textContent = sig.priceInYoda.toString();
+      $("demoBuyUnit").textContent = yodaSymbol;
+      demoBuyModal.classList.remove("hidden");
+    }
+
+    function closeDemoBuyModal() {
+      demoBuyModal.classList.add("hidden");
+    }
+
+    demoBuyModal.addEventListener("click", (e) => {
+      if (e.target === demoBuyModal) closeDemoBuyModal();
+    });
+    $("demoBuyCloseBtn").addEventListener("click", closeDemoBuyModal);
+    $("demoBuyConfirmBtn").addEventListener("click", closeDemoBuyModal);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !demoBuyModal.classList.contains("hidden")) {
+        closeDemoBuyModal();
+      }
     });
 
     // =========================================================================
