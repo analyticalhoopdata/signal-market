@@ -226,3 +226,11 @@ These are acceptable simplifications for the CSE 426/526 assignment and keep the
 - **Course:** CSE 426/526 — Blockchains, Cryptocurrencies, and Smart Contracts
 - **Institution:** University at Buffalo
 - **Toolchain:** Remix IDE, MetaMask, ethers.js v5, plain HTML/JS
+
+## Performance Metrics
+- Total transactions: 12
+- Average transaction fee: 0.00259 ETH
+- Transaction rate: 1.2 transactions/hour
+- Total gas spent: 0.03111 ETH
+- Contract: 0xd149506D13656039084c01D5038146648e43Aa08
+- Etherscan: https://sepolia.etherscan.io/address/0xd149506D13656039084c01D5038146648e43Aa08
