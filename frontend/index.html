@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGNAL//MARKET — Quant Sports Analytics Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #080B0F;
+      --surface: #0D1117;
+      --panel: #161B22;
+      --border: #21262D;
+      --border-strong: #30363D;
+      --primary: #00D4AA;
+      --secondary: #58A6FF;
+      --positive: #3FB950;
+      --negative: #F85149;
+      --warn: #D29922;
+      --muted: #8B949E;
+      --text: #E6EDF3;
+      --nfl: #FF4B4B;
+      --nba: #FF8C00;
+      --soccer: #00D4AA;
+      --default-sport: #58A6FF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* =========================================================================
+       HEADER
+       ========================================================================= */
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1.2px;
+      color: var(--text);
+    }
+
+    .brand-version {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 3px 7px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .clock {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--primary);
+      letter-spacing: 1.5px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .clock-date {
+      display: block;
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .wallet-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .wallet-balance {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--surface);
+      white-space: nowrap;
+    }
+
+    .wallet-balance .diamond { color: var(--primary); margin-right: 4px; }
+    .wallet-balance .symbol { color: var(--muted); margin-left: 4px; font-size: 10px; }
+
+    .terminal-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      background: transparent;
+      border: 1px solid var(--primary);
+      padding: 7px 14px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+      transition: background 0.12s ease;
+    }
+
+    .terminal-btn:hover:not(:disabled) {
+      background: rgba(0, 212, 170, 0.08);
+    }
+
+    .terminal-btn:disabled {
+      color: var(--muted);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
+
+    /* =========================================================================
+       METRICS BAR
+       ========================================================================= */
+    .metrics-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+      padding: 9px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      flex-wrap: wrap;
+    }
+
+    .metrics-bar .metric-label {
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .metrics-bar .metric-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .metrics-bar .metric-value.ok { color: var(--primary); }
+
+    .metrics-bar .divider {
+      color: var(--border-strong);
+    }
+
+    /* =========================================================================
+       FILTER BAR
+       ========================================================================= */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-wrap: wrap;
+    }
+
+    .sport-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .sport-tab {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .sport-tab:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .sport-tab.active {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: rgba(0, 212, 170, 0.06);
+    }
+
+    .sport-tab .tab-count {
+      font-size: 10px;
+      color: var(--muted);
+      margin-left: 6px;
+      font-weight: 500;
+    }
+
+    .sport-tab.active .tab-count {
+      color: var(--primary);
+    }
+
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+
+    .market-select {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .market-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .terminal-select {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 7px 28px 7px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%238B949E' stroke-width='1.5' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      min-width: 180px;
+      outline: none;
+      transition: border-color 0.12s ease;
+    }
+
+    .terminal-select:focus {
+      border-color: var(--primary);
+    }
+
+    .terminal-select option {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .search-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 7px 30px 7px 12px;
+      border-radius: 2px;
+      width: 260px;
+      outline: none;
+      transition: border-color 0.12s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .search-input::placeholder {
+      color: #4a5362;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      line-height: 1;
+    }
+
+    .search-clear:hover {
+      color: var(--text);
+    }
+
+    .filter-status {
+      padding: 8px 24px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    /* =========================================================================
+       MAIN
+       ========================================================================= */
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 20px 24px 40px;
+    }
+
+    .status-banner {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-left-color: var(--muted);
+      background: var(--surface);
+      color: var(--muted);
+      margin-bottom: 22px;
+      border-radius: 2px;
+      white-space: pre-wrap;
+      letter-spacing: 0.3px;
+    }
+
+    .status-banner.error {
+      border-left-color: var(--negative);
+      color: var(--negative);
+    }
+    .status-banner.success {
+      border-left-color: var(--positive);
+      color: var(--positive);
+    }
+    .status-banner.warn {
+      border-left-color: var(--warn);
+      color: var(--warn);
+    }
+    .status-banner.loading {
+      border-left-color: var(--primary);
+      color: var(--primary);
+    }
+
+    section {
+      margin-bottom: 36px;
+    }
+
+    .section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-transform: uppercase;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-title .title-main {
+      color: var(--text);
+    }
+
+    .section-title .hint {
+      font-size: 9px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.8px;
+    }
+
+    /* =========================================================================
+       SORT CONTROLS
+       ========================================================================= */
+    .sort-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+    }
+
+    .sort-label {
+      margin-right: 4px;
+      text-transform: uppercase;
+    }
+
+    .sort-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+    }
+
+    .sort-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .sort-btn.active {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: rgba(0, 212, 170, 0.06);
+    }
+
+    /* =========================================================================
+       SIGNAL CARDS
+       ========================================================================= */
+    .signal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .signal-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--default-sport);
+      border-radius: 2px;
+      padding: 16px 20px;
+      animation: fadeIn 0.18s ease;
+      cursor: pointer;
+      transition: border-color 0.12s ease;
+    }
+
+    .signal-card:hover {
+      border-color: var(--border-strong);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .signal-card[data-sport="NFL"] { border-left-color: var(--nfl); }
+    .signal-card[data-sport="NBA"] { border-left-color: var(--nba); }
+    .signal-card[data-sport="SOCCER"] { border-left-color: var(--soccer); }
+    .signal-card[data-sport="MLB"] { border-left-color: #9B6DFF; }
+    .signal-card[data-sport="NHL"] { border-left-color: #58A6FF; }
+
+    .signal-card.owned {
+      border-left-color: var(--positive);
+    }
+
+    .signal-card.sold {
+      opacity: 0.6;
+    }
+
+    .signal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .signal-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sport-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text);
+      background: var(--panel);
+    }
+
+    .market-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .signal-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .signal-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin: 10px 0 14px 0;
+      line-height: 1.4;
+      letter-spacing: 0.2px;
+    }
+
+    .signal-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      align-items: end;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .stat-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .stat-value.accent { color: var(--primary); }
+    .stat-value.positive { color: var(--positive); }
+    .stat-value.mono { text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+
+    .stat-value .unit {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+      border: 1px solid;
+    }
+
+    .status-badge.available {
+      color: var(--positive);
+      border-color: var(--positive);
+    }
+    .status-badge.sold {
+      color: var(--negative);
+      border-color: var(--negative);
+    }
+    .status-badge.owned {
+      color: var(--positive);
+      border-color: var(--positive);
+      background: rgba(63, 185, 80, 0.06);
+    }
+
+    .signal-description {
+      margin-top: 14px;
+      padding: 12px 14px 12px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .signal-description::before {
+      content: "// SIGNAL PAYLOAD — DECRYPTED";
+      display: block;
+      font-size: 9px;
+      color: var(--primary);
+      letter-spacing: 1.2px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .signal-description.locked {
+      color: var(--muted);
+      font-style: normal;
+    }
+
+    .signal-description.locked::before {
+      content: "// SIGNAL PAYLOAD — ENCRYPTED";
+      color: var(--muted);
+    }
+
+    .buy-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: transparent;
+      border: 1px solid var(--primary);
+      padding: 9px 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      transition: background 0.12s ease;
+    }
+
+    .buy-btn:hover:not(:disabled) {
+      background: rgba(0, 212, 170, 0.1);
+    }
+
+    .buy-btn:disabled {
+      color: var(--muted);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
+
+    .share-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--secondary);
+      background: transparent;
+      border: 1px solid var(--secondary);
+      padding: 7px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+      transition: background 0.12s ease;
+    }
+
+    .share-btn:hover {
+      background: rgba(88, 166, 255, 0.08);
+    }
+
+    .action-slot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-slot-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Small "YOUR LISTING" pill tag */
+    .owner-pill {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--warn);
+      border: 1px solid var(--warn);
+      padding: 2px 5px;
+      border-radius: 2px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      line-height: 1;
+      background: rgba(210, 153, 34, 0.06);
+    }
+
+    /* =========================================================================
+       ORDER ENTRY FORM
+       ========================================================================= */
+    .order-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 22px 24px 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .form-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+
+    .form-input,
+    .form-textarea {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.15s ease;
+      width: 100%;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: #4a5362;
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      background: transparent;
+      border: 1px solid var(--primary);
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 1.2px;
+      transition: background 0.12s ease;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: rgba(0, 212, 170, 0.08);
+    }
+
+    .submit-btn:disabled {
+      color: var(--muted);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
+
+    .gas-estimate {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 10px;
+      text-align: center;
+      letter-spacing: 0.6px;
+    }
+
+    /* =========================================================================
+       EMPTY STATE
+       ========================================================================= */
+    .empty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 36px;
+      text-align: center;
+      border: 1px dashed var(--border);
+      border-radius: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* =========================================================================
+       SIGNAL DETAIL MODAL
+       ========================================================================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 11, 15, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      animation: overlayFadeIn 0.15s ease;
+      backdrop-filter: blur(2px);
+    }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-ticket {
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      border-radius: 2px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 0 0 1px rgba(0, 212, 170, 0.1);
+      animation: ticketSlideIn 0.2s ease;
+    }
+
+    @keyframes ticketSlideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .modal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .modal-title .modal-signal-id {
+      color: var(--primary);
+      margin-left: 8px;
+    }
+
+    .modal-close {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      transition: all 0.12s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--negative);
+      border-color: var(--negative);
+    }
+
+    .modal-body {
+      padding: 20px 24px 16px;
+    }
+
+    .ticket-meta {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .edge-display {
+      background: var(--bg);
+      border: 1px solid var(--positive);
+      border-left-width: 3px;
+      border-radius: 2px;
+      padding: 18px 20px;
+      margin: 8px 0 20px;
+      text-align: center;
+    }
+
+    .edge-display .edge-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .edge-display .edge-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--positive);
+      line-height: 1;
+      letter-spacing: -0.5px;
+    }
+
+    .edge-display .edge-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    .ticket-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 20px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+
+    .ticket-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .ticket-row.full {
+      grid-column: 1 / -1;
+    }
+
+    .ticket-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .ticket-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      word-wrap: break-word;
+    }
+
+    .ticket-value.accent { color: var(--primary); }
+    .ticket-value.positive { color: var(--positive); }
+
+    .ticket-value .small {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 6px;
+    }
+
+    .ticket-description {
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .ticket-description::before {
+      content: "// FULL SIGNAL PAYLOAD";
+      display: block;
+      font-size: 9px;
+      color: var(--primary);
+      letter-spacing: 1.2px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .ticket-description.locked {
+      color: var(--muted);
+    }
+
+    .ticket-description.locked::before {
+      content: "// PAYLOAD — ENCRYPTED";
+      color: var(--muted);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .modal-price-block {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .modal-price-block .price-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .modal-price-block .price-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .modal-price-block .price-value .unit {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 6px;
+    }
+
+    .modal-buy-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      background: transparent;
+      border: 1px solid var(--primary);
+      padding: 14px 28px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 1.2px;
+      transition: background 0.12s ease;
+      flex: 1;
+      max-width: 280px;
+    }
+
+    .modal-buy-btn:hover:not(:disabled) {
+      background: rgba(0, 212, 170, 0.1);
+    }
+
+    .modal-buy-btn:disabled {
+      color: var(--muted);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
+
+    .modal-buy-btn.owned-state {
+      color: var(--positive);
+      border-color: var(--positive);
+    }
+
+    .modal-buy-btn.sold-state {
+      color: var(--negative);
+      border-color: var(--negative);
+      cursor: not-allowed;
+    }
+
+    /* =========================================================================
+       TRANSACTION LOG
+       ========================================================================= */
+    .tx-log {
+      margin-top: 40px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tx-log-header {
+      padding: 10px 24px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+    }
+
+    .tx-log-header .label-left { text-transform: uppercase; }
+
+    .tx-log-header .clear-btn {
+      font-family: inherit;
+      font-size: 10px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 4px 9px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+    }
+    .tx-log-header .clear-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    .tx-log-body {
+      padding: 12px 24px 16px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .tx-log-body:empty::before {
+      content: "// NO TRANSACTIONS YET — AWAITING ACTIVITY";
+      color: #3d434d;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .tx-line {
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tx-line .ts { color: var(--muted); }
+    .tx-line .label { color: var(--primary); font-weight: 700; }
+    .tx-line .label.confirmed { color: var(--positive); }
+    .tx-line .label.error { color: var(--negative); }
+    .tx-line .label.info { color: var(--secondary); }
+    .tx-line .hash { color: var(--secondary); }
+    .tx-line .block { color: var(--primary); }
+
+    /* =========================================================================
+       FOOTER
+       ========================================================================= */
+    footer {
+      padding: 18px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      border-top: 1px solid var(--border);
+      text-transform: uppercase;
+    }
+
+    .hidden { display: none !important; }
+
+    /* =========================================================================
+       SCROLLBAR
+       ========================================================================= */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 0; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* =========================================================================
+       RESPONSIVE
+       ========================================================================= */
+    @media (max-width: 900px) {
+      header {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .clock { text-align: left; }
+      .wallet-cluster { justify-content: flex-start; }
+      .form-row { grid-template-columns: 1fr; }
+      .signal-stats { grid-template-columns: 1fr 1fr; row-gap: 14px; }
+      .metrics-bar { gap: 12px; font-size: 10px; }
+      .filter-bar { gap: 12px; }
+      .filter-right { margin-left: 0; width: 100%; }
+      .search-input { width: 100%; }
+      .ticket-grid { grid-template-columns: 1fr; }
+      .modal-footer { flex-direction: column; align-items: stretch; }
+      .modal-buy-btn { max-width: none; }
+      .edge-display .edge-value { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="brand-name">SIGNAL//MARKET</span>
+      <span class="brand-version">v1.0 • SEPOLIA</span>
+    </div>
+    <div class="clock" id="clock">
+      --:--:--
+      <span class="clock-date" id="clockDate">---</span>
+    </div>
+    <div class="wallet-cluster">
+      <span id="balancePill" class="wallet-balance hidden">
+        <span class="diamond">◈</span><span id="yodaBalance">0.00</span><span class="symbol" id="yodaSymbol">YODA</span>
+      </span>
+      <button id="connectBtn" class="terminal-btn">[ CONNECT WALLET ]</button>
+    </div>
+  </header>
+
+  <div class="metrics-bar">
+    <span><span class="metric-label">SIGNALS LISTED:</span> <span class="metric-value" id="m_listed">0</span></span>
+    <span class="divider">|</span>
+    <span><span class="metric-label">SIGNALS SOLD:</span> <span class="metric-value" id="m_sold">0</span></span>
+    <span class="divider">|</span>
+    <span><span class="metric-label">CONTRACT:</span> <span class="metric-value" id="m_contract">—</span></span>
+    <span class="divider">|</span>
+    <span><span class="metric-label">NETWORK:</span> <span class="metric-value ok">SEPOLIA #11155111</span></span>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="sport-tabs" id="sportTabs">
+      <button class="sport-tab active" data-sport="ALL">ALL <span class="tab-count" data-sport-count="ALL">0</span></button>
+      <button class="sport-tab" data-sport="NBA">NBA <span class="tab-count" data-sport-count="NBA">0</span></button>
+      <button class="sport-tab" data-sport="MLB">MLB <span class="tab-count" data-sport-count="MLB">0</span></button>
+      <button class="sport-tab" data-sport="NFL">NFL <span class="tab-count" data-sport-count="NFL">0</span></button>
+      <button class="sport-tab" data-sport="SOCCER">SOCCER <span class="tab-count" data-sport-count="SOCCER">0</span></button>
+      <button class="sport-tab" data-sport="NHL">NHL <span class="tab-count" data-sport-count="NHL">0</span></button>
+    </div>
+    <div class="filter-right">
+      <div class="market-select">
+        <span class="market-label">MARKET &gt;</span>
+        <select id="marketFilter" class="terminal-select">
+          <option value="">All Markets</option>
+          <option value="Player Props - Points">Player Props - Points</option>
+          <option value="Player Props - Assists">Player Props - Assists</option>
+          <option value="Player Props - Rebounds">Player Props - Rebounds</option>
+          <option value="Player Props - Total Bases">Player Props - Total Bases</option>
+          <option value="Pitcher Props">Pitcher Props</option>
+          <option value="Game Totals">Game Totals</option>
+          <option value="Run Line">Run Line</option>
+          <option value="Moneyline">Moneyline</option>
+        </select>
+      </div>
+      <div class="search-wrapper">
+        <input id="searchInput" class="search-input" type="text" placeholder="Search player, team, market..." autocomplete="off"/>
+        <button id="searchClear" class="search-clear hidden" type="button">×</button>
+      </div>
+    </div>
+  </div>
+  <div class="filter-status">// Showing <span id="filterCount">0</span> of <span id="filterTotal">0</span> signals</div>
+
+  <main>
+    <div id="statusBanner" class="status-banner">// TERMINAL OFFLINE — CONNECT WALLET TO INITIALIZE</div>
+
+    <!-- Owner-only: order entry -->
+    <section id="ownerSection" class="hidden">
+      <div class="section-title">
+        <span class="title-main">// ORDER ENTRY — LIST NEW SIGNAL</span>
+        <span class="hint">OWNER RESTRICTED</span>
+      </div>
+      <form id="listForm" class="order-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">SPORT &gt;</label>
+            <input id="f_sport" class="form-input" type="text" placeholder="NFL" autocomplete="off"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">MARKET &gt;</label>
+            <input id="f_market" class="form-input" type="text" placeholder="Moneyline" autocomplete="off"/>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label class="form-label">HINT &gt;</label>
+            <input id="f_previewHint" class="form-input" type="text" placeholder="NFL Week 12 — High edge opportunity" autocomplete="off"/>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label class="form-label">DESC &gt;</label>
+            <textarea id="f_description" class="form-textarea" placeholder="Take Bills -3.5 vs Dolphins. Model edge: 6.2%. Key: Tua injury downgrade."></textarea>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-field">
+            <label class="form-label">PRICE &gt;</label>
+            <input id="f_price" class="form-input" type="number" min="1" placeholder="100"/>
+          </div>
+        </div>
+        <button id="listBtn" class="submit-btn" type="button">[ SUBMIT SIGNAL TO CHAIN ]</button>
+        <div class="gas-estimate">GAS ESTIMATE ~0.001 ETH</div>
+      </form>
+    </section>
+
+    <!-- Marketplace -->
+    <section>
+      <div class="section-title">
+        <span class="title-main">// MARKETPLACE</span>
+        <div class="sort-controls">
+          <span class="sort-label">SORT:</span>
+          <button class="sort-btn active" data-sort="ev" type="button">EV% ▼</button>
+          <button class="sort-btn" data-sort="price" type="button">PRICE</button>
+          <button class="sort-btn" data-sort="newest" type="button">NEWEST</button>
+        </div>
+      </div>
+      <div id="marketplaceGrid" class="signal-list"></div>
+      <div id="marketplaceEmpty" class="empty hidden">// NO SIGNALS MATCH CURRENT FILTERS</div>
+    </section>
+
+    <!-- Owned -->
+    <section id="mySignalsSection" class="hidden">
+      <div class="section-title">
+        <span class="title-main">// OWNED SIGNALS</span>
+        <span class="hint">DECRYPTED PAYLOADS</span>
+      </div>
+      <div id="mySignalsGrid" class="signal-list"></div>
+      <div id="mySignalsEmpty" class="empty hidden">// NO OWNED SIGNALS</div>
+    </section>
+  </main>
+
+  <!-- Signal detail modal -->
+  <div id="signalDetailModal" class="modal-overlay hidden">
+    <div class="modal-ticket" id="modalTicket">
+      <div class="modal-header">
+        <div class="modal-title">
+          // SIGNAL TICKET<span class="modal-signal-id" id="modalSignalId">#000</span>
+        </div>
+        <button class="modal-close" id="modalCloseBtn" type="button">[ X ]</button>
+      </div>
+      <div class="modal-body">
+        <div class="ticket-meta" id="modalMeta"></div>
+        <div class="edge-display">
+          <div class="edge-label">MODEL EDGE — CLOSING LINE VALUE</div>
+          <div class="edge-value" id="modalEdge">+0.00%</div>
+          <div class="edge-sub" id="modalEdgeSub">EV CONFIRMED POSITIVE</div>
+        </div>
+        <div class="ticket-grid">
+          <div class="ticket-row">
+            <span class="ticket-label">Sport</span>
+            <span class="ticket-value" id="modalSport">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Market Type</span>
+            <span class="ticket-value" id="modalMarket">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Decimal Odds</span>
+            <span class="ticket-value accent" id="modalOddsDec">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">American Odds</span>
+            <span class="ticket-value accent" id="modalOddsAm">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Closing Line</span>
+            <span class="ticket-value" id="modalClosingLine">—</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Status</span>
+            <span class="ticket-value" id="modalStatus">—</span>
+          </div>
+          <div class="ticket-row full">
+            <span class="ticket-label">Matchup</span>
+            <span class="ticket-value" id="modalMatchup">—</span>
+          </div>
+        </div>
+        <div class="ticket-description" id="modalDescription">—</div>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-price-block">
+          <div class="price-label">Price</div>
+          <div class="price-value"><span id="modalPrice">0</span><span class="unit" id="modalPriceUnit">YODA</span></div>
+        </div>
+        <button id="modalBuyBtn" class="modal-buy-btn" type="button">[ BUY SIGNAL ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Log -->
+  <div class="tx-log">
+    <div class="tx-log-header">
+      <span class="label-left">// TRANSACTION LOG</span>
+      <button class="clear-btn" id="txLogClearBtn">CLEAR</button>
+    </div>
+    <div id="txLogBody" class="tx-log-body"></div>
+  </div>
+
+  <footer>
+    SIGNAL//MARKET — UB CSE 426/526 • ETHERS.JS v5 • ETHEREUM SEPOLIA TESTNET
+  </footer>
+
+  <script>
+    // =========================================================================
+    // CONFIGURATION — unchanged
+    // =========================================================================
+    const YODA_TOKEN_ADDRESS = "0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2";
+    const SIGNAL_MARKET_ADDRESS = "0xd149506D13656039084c01D5038146648e43Aa08";
+
+    // Sepolia chain parameters
+    const SEPOLIA_CHAIN_ID_HEX = "0xaa36a7"; // 11155111
+    const SEPOLIA_PARAMS = {
+      chainId: SEPOLIA_CHAIN_ID_HEX,
+      chainName: "Sepolia Test Network",
+      nativeCurrency: { name: "Sepolia ETH", symbol: "ETH", decimals: 18 },
+      rpcUrls: ["https://rpc.sepolia.org"],
+      blockExplorerUrls: ["https://sepolia.etherscan.io"]
+    };
+
+    // =========================================================================
+    // ABIs — unchanged
+    // =========================================================================
+    const SIGNAL_MARKET_ABI = [
+      "function owner() view returns (address)",
+      "function yodaToken() view returns (address)",
+      "function signalCount() view returns (uint256)",
+      "function signals(uint256) view returns (uint256 id, string sport, string market, string description, string previewHint, uint256 priceInYoda, bool sold, address currentOwner)",
+      "function listSignal(string sport, string market, string description, string previewHint, uint256 priceInYoda)",
+      "function buySignal(uint256 signalId)",
+      "function getSignal(uint256 signalId) view returns (tuple(uint256 id, string sport, string market, string description, string previewHint, uint256 priceInYoda, bool sold, address currentOwner))",
+      "function getMySignals() view returns (uint256[])",
+      "function getAllSignals() view returns (tuple(uint256 id, string sport, string market, string description, string previewHint, uint256 priceInYoda, bool sold, address currentOwner)[])",
+      "event SignalListed(uint256 indexed id, string sport, string market, uint256 priceInYoda)",
+      "event SignalPurchased(uint256 indexed id, address indexed buyer, uint256 priceInYoda)"
+    ];
+
+    const ERC20_ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)",
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ];
+
+    // =========================================================================
+    // Global state
+    // =========================================================================
+    let provider = null;
+    let signer = null;
+    let userAddress = null;
+    let marketContract = null;
+    let yodaContract = null;
+    let contractOwner = null;
+    let yodaDecimals = 18;
+    let yodaSymbol = "YODA";
+    let loadingInterval = null;
+
+    // Cache of all fetched signals (raw, unfiltered)
+    let signalCache = [];
+
+    // Filter / sort state
+    let filterSport = "ALL";
+    let filterMarket = "";
+    let filterSearch = "";
+    let sortMode = "ev"; // ev | price | newest
+
+    // Currently-open modal signal (for the buy button)
+    let modalSignal = null;
+
+    // =========================================================================
+    // DOM helpers
+    // =========================================================================
+    const $ = (id) => document.getElementById(id);
+    const statusBanner = $("statusBanner");
+    const connectBtn = $("connectBtn");
+    const balancePill = $("balancePill");
+    const yodaBalanceEl = $("yodaBalance");
+    const yodaSymbolEl = $("yodaSymbol");
+    const ownerSection = $("ownerSection");
+    const mySignalsSection = $("mySignalsSection");
+    const marketplaceGrid = $("marketplaceGrid");
+    const marketplaceEmpty = $("marketplaceEmpty");
+    const mySignalsGrid = $("mySignalsGrid");
+    const mySignalsEmpty = $("mySignalsEmpty");
+    const txLogBody = $("txLogBody");
+    const modalEl = $("signalDetailModal");
+    const searchInput = $("searchInput");
+    const searchClear = $("searchClear");
+    const marketFilterEl = $("marketFilter");
+
+    function setStatus(msg, kind = "") {
+      stopLoadingAnim();
+      if (typeof msg === "string" && msg.endsWith("...")) {
+        const base = msg.slice(0, -3).toUpperCase();
+        statusBanner.className = "status-banner loading";
+        let tick = 0;
+        const render = () => {
+          const d = ".".repeat((tick % 4) + 1);
+          statusBanner.textContent = "// " + base + d;
+          tick++;
+        };
+        render();
+        loadingInterval = setInterval(render, 320);
+        return;
+      }
+      statusBanner.textContent = msg;
+      statusBanner.className = "status-banner" + (kind ? " " + kind : "");
+    }
+
+    function stopLoadingAnim() {
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+      }
+    }
+
+    function shortAddr(addr) {
+      if (!addr) return "";
+      return addr.slice(0, 6) + "..." + addr.slice(-4);
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    // =========================================================================
+    // Live clock
+    // =========================================================================
+    function updateClock() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+      const clockEl = $("clock");
+      clockEl.firstChild.nodeValue = `${hh}:${mm}:${ss} `;
+      const d = now;
+      const dateStr = d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" }).toUpperCase();
+      $("clockDate").textContent = dateStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // =========================================================================
+    // Metrics bar
+    // =========================================================================
+    function updateMetrics(all) {
+      if (Array.isArray(all)) {
+        $("m_listed").textContent = String(all.length);
+        $("m_sold").textContent = String(all.filter(s => s.sold).length);
+      }
+      $("m_contract").textContent = shortAddr(SIGNAL_MARKET_ADDRESS);
+    }
+    updateMetrics(null);
+
+    // =========================================================================
+    // Transaction log
+    // =========================================================================
+    function nowTs() {
+      const n = new Date();
+      return `${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}:${String(n.getSeconds()).padStart(2,"0")}`;
+    }
+
+    function logTx(label, detailHtml, kind = "") {
+      const line = document.createElement("div");
+      line.className = "tx-line";
+      line.innerHTML = `<span class="ts">[${nowTs()}]</span> <span class="label ${kind}">${escapeHtml(label)}:</span> ${detailHtml}`;
+      txLogBody.appendChild(line);
+      txLogBody.scrollTop = txLogBody.scrollHeight;
+    }
+
+    $("txLogClearBtn").addEventListener("click", () => { txLogBody.innerHTML = ""; });
+
+    // =========================================================================
+    // Signal detail parser
+    // Extracts structured fields from the on-chain description text.
+    // Expected format (produced by the listSignals.js script):
+    //
+    //   <bet_info line>
+    //   Odds: <decimal> (<american>)
+    //   Closing Line: <value>
+    //   Edge (CLV): +<pct>%
+    //   Matchup: <home> at <away>
+    //   Source: <source>
+    //
+    // Returns an object with whatever fields could be parsed; all optional.
+    // =========================================================================
+    function parseSignalDetails(description) {
+      const details = {
+        betInfo: "",
+        oddsDecimal: null,
+        oddsAmerican: null,
+        closingLine: null,
+        edgePercent: null,
+        matchup: null,
+        source: null
+      };
+
+      if (!description || description === "Purchase to unlock") return details;
+
+      const lines = description.split(/\r?\n/);
+      details.betInfo = lines[0] || "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        let m;
+        if ((m = trimmed.match(/^Odds:\s*([\d.]+)\s*(?:\(\s*([+-]?\d+)\s*\))?/))) {
+          details.oddsDecimal = parseFloat(m[1]);
+          if (m[2]) details.oddsAmerican = m[2].startsWith("-") ? m[2] : "+" + m[2].replace("+", "");
+        } else if ((m = trimmed.match(/^Closing Line:\s*(.+)$/))) {
+          details.closingLine = m[1].trim();
+        } else if ((m = trimmed.match(/^Edge(?:\s*\(CLV\))?:\s*([+-]?[\d.]+)%/i))) {
+          details.edgePercent = parseFloat(m[1]);
+        } else if ((m = trimmed.match(/^Matchup:\s*(.+)$/i))) {
+          details.matchup = m[1].trim();
+        } else if ((m = trimmed.match(/^Source:\s*(.+)$/i))) {
+          details.source = m[1].trim();
+        }
+      }
+      return details;
+    }
+
+    // Convert decimal odds to American if we only have the decimal
+    function decimalToAmerican(d) {
+      if (!d || isNaN(d) || d <= 1) return null;
+      if (d >= 2) return "+" + Math.round((d - 1) * 100);
+      return String(Math.round(-100 / (d - 1)));
+    }
+
+    // =========================================================================
+    // Placeholder-signal filter (Change 3)
+    // Hide signals whose previewHint looks like the manual placeholder data.
+    // =========================================================================
+    function isPlaceholderSignal(sig) {
+      const hint = sig.previewHint || "";
+      return hint.includes("Model Predicts") || hint.includes("Model Edge Prediction");
+    }
+
+    // =========================================================================
+    // Filter / sort pipeline
+    // =========================================================================
+    function applyFilters(signals) {
+      const q = filterSearch.trim().toLowerCase();
+      return signals.filter(sig => {
+        // Hide placeholders always
+        if (isPlaceholderSignal(sig)) return false;
+
+        // Sport tab
+        if (filterSport !== "ALL") {
+          const sport = (sig.sport || "").toUpperCase();
+          if (sport !== filterSport) return false;
+        }
+
+        // Market dropdown
+        if (filterMarket) {
+          const market = sig.market || "";
+          if (filterMarket === "Pitcher Props") {
+            if (!market.startsWith("Pitcher Props")) return false;
+          } else if (market !== filterMarket) {
+            return false;
+          }
+        }
+
+        // Search
+        if (q) {
+          const haystack = [
+            sig.previewHint || "",
+            sig.description || "",
+            sig.market || "",
+            sig.sport || ""
+          ].join(" ").toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function sortSignals(signals) {
+      const arr = signals.slice();
+      if (sortMode === "ev") {
+        arr.sort((a, b) => {
+          const ea = parseSignalDetails(a.description).edgePercent;
+          const eb = parseSignalDetails(b.description).edgePercent;
+          const av = (ea === null || isNaN(ea)) ? -Infinity : ea;
+          const bv = (eb === null || isNaN(eb)) ? -Infinity : eb;
+          return bv - av;
+        });
+      } else if (sortMode === "price") {
+        arr.sort((a, b) => {
+          const av = Number(a.priceInYoda.toString());
+          const bv = Number(b.priceInYoda.toString());
+          return bv - av;
+        });
+      } else if (sortMode === "newest") {
+        arr.sort((a, b) => {
+          const av = Number(a.id.toString());
+          const bv = Number(b.id.toString());
+          return bv - av;
+        });
+      }
+      return arr;
+    }
+
+    function updateSportCounts(allVisibleSignals) {
+      // Count per-sport based on everything EXCEPT the sport tab filter itself
+      // (so that counts reflect what each tab would show if clicked, given
+      // the current market/search state).
+      const q = filterSearch.trim().toLowerCase();
+      const baseline = allVisibleSignals.filter(sig => {
+        if (isPlaceholderSignal(sig)) return false;
+        if (filterMarket) {
+          const market = sig.market || "";
+          if (filterMarket === "Pitcher Props") {
+            if (!market.startsWith("Pitcher Props")) return false;
+          } else if (market !== filterMarket) {
+            return false;
+          }
+        }
+        if (q) {
+          const haystack = [
+            sig.previewHint || "",
+            sig.description || "",
+            sig.market || "",
+            sig.sport || ""
+          ].join(" ").toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+        return true;
+      });
+
+      const counts = { ALL: baseline.length, NBA: 0, MLB: 0, NFL: 0, SOCCER: 0, NHL: 0 };
+      for (const s of baseline) {
+        const sp = (s.sport || "").toUpperCase();
+        if (counts[sp] !== undefined) counts[sp]++;
+      }
+      document.querySelectorAll("[data-sport-count]").forEach(el => {
+        const key = el.getAttribute("data-sport-count");
+        el.textContent = counts[key] !== undefined ? counts[key] : 0;
+      });
+    }
+
+    function renderMarketplaceFromCache() {
+      marketplaceGrid.innerHTML = "";
+      const visible = applyFilters(signalCache);
+      const sorted = sortSignals(visible);
+
+      const totalAfterPlaceholderFilter = signalCache.filter(s => !isPlaceholderSignal(s)).length;
+      $("filterCount").textContent = String(sorted.length);
+      $("filterTotal").textContent = String(totalAfterPlaceholderFilter);
+
+      updateSportCounts(signalCache);
+
+      if (sorted.length === 0) {
+        marketplaceEmpty.classList.remove("hidden");
+      } else {
+        marketplaceEmpty.classList.add("hidden");
+        for (const sig of sorted) {
+          marketplaceGrid.appendChild(renderSignalCard(sig));
+        }
+      }
+    }
+
+    // =========================================================================
+    // Wallet / network — unchanged
+    // =========================================================================
+    async function ensureSepolia() {
+      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+      if (chainId === SEPOLIA_CHAIN_ID_HEX) return true;
+
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: SEPOLIA_CHAIN_ID_HEX }]
+        });
+        return true;
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [SEPOLIA_PARAMS]
+            });
+            return true;
+          } catch (addErr) {
+            setStatus("// ERROR: SEPOLIA NOT INSTALLED IN WALLET", "error");
+            return false;
+          }
+        }
+        setStatus("// ERROR: WRONG NETWORK — SWITCH TO SEPOLIA", "error");
+        return false;
+      }
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        setStatus("// ERROR: METAMASK NOT DETECTED — INSTALL WALLET", "error");
+        return;
+      }
+
+      try {
+        setStatus("Connecting wallet...");
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const ok = await ensureSepolia();
+        if (!ok) return;
+
+        provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        if (SIGNAL_MARKET_ADDRESS.startsWith("PLACEHOLDER") || YODA_TOKEN_ADDRESS.startsWith("PLACEHOLDER")) {
+          setStatus(
+            "// WARNING: CONTRACT ADDRESSES NOT CONFIGURED",
+            "warn"
+          );
+          connectBtn.textContent = shortAddr(userAddress);
+          return;
+        }
+
+        marketContract = new ethers.Contract(SIGNAL_MARKET_ADDRESS, SIGNAL_MARKET_ABI, signer);
+        yodaContract = new ethers.Contract(YODA_TOKEN_ADDRESS, ERC20_ABI, signer);
+
+        try {
+          yodaDecimals = await yodaContract.decimals();
+        } catch (_) { yodaDecimals = 18; }
+        try {
+          yodaSymbol = await yodaContract.symbol();
+        } catch (_) { yodaSymbol = "YODA"; }
+        yodaSymbolEl.textContent = yodaSymbol;
+        $("modalPriceUnit").textContent = yodaSymbol;
+
+        contractOwner = (await marketContract.owner()).toLowerCase();
+
+        connectBtn.textContent = shortAddr(userAddress);
+        balancePill.classList.remove("hidden");
+        mySignalsSection.classList.remove("hidden");
+
+        logTx("WALLET CONNECTED", `<span class="hash">${shortAddr(userAddress)}</span>`, "info");
+
+        if (userAddress.toLowerCase() === contractOwner) {
+          ownerSection.classList.remove("hidden");
+          setStatus("// OWNER AUTHENTICATED — ORDER ENTRY UNLOCKED", "success");
+        } else {
+          setStatus("// TERMINAL ONLINE — QUERYING MARKETPLACE", "success");
+        }
+
+        await refreshBalance();
+        await loadMarketplace();
+        await loadMySignals();
+
+        window.ethereum.on("accountsChanged", () => window.location.reload());
+        window.ethereum.on("chainChanged", () => window.location.reload());
+      } catch (err) {
+        console.error(err);
+        setStatus("// ERROR: " + (err.message || err), "error");
+      }
+    }
+
+    async function refreshBalance() {
+      if (!yodaContract || !userAddress) return;
+      try {
+        const raw = await yodaContract.balanceOf(userAddress);
+        const formatted = ethers.utils.formatUnits(raw, yodaDecimals);
+        const pretty = parseFloat(formatted).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        yodaBalanceEl.textContent = pretty;
+      } catch (err) {
+        console.error("balance error", err);
+        yodaBalanceEl.textContent = "?";
+      }
+    }
+
+    // =========================================================================
+    // Share helper
+    // =========================================================================
+    function shareSignal(sig) {
+      const baseUrl = window.location.href.split('#')[0];
+      const url = baseUrl + "#signal-" + sig.id.toString();
+      const copy = (text) => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        return new Promise((resolve, reject) => {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            resolve();
+          } catch (e) { reject(e); }
+        });
+      };
+      copy(url).then(() => {
+        const idStr = "#" + String(sig.id).padStart(3, "0");
+        setStatus(`// SIGNAL LINK COPIED — ${idStr}`, "success");
+        logTx("LINK COPIED", `<span class="hash">${escapeHtml(url)}</span>`, "info");
+      }).catch(() => {
+        setStatus("// ERROR: CLIPBOARD COPY FAILED", "error");
+      });
+    }
+
+    // =========================================================================
+    // Signal card rendering
+    // =========================================================================
+    function renderSignalCard(sig, { owned = false } = {}) {
+      const card = document.createElement("div");
+      const isContractOwner = userAddress && userAddress.toLowerCase() === contractOwner;
+      const soldToMe = sig.sold && userAddress && sig.currentOwner.toLowerCase() === userAddress.toLowerCase();
+      // Owners see the full description for their own listings (Change 2).
+      // Masking only happens for non-owners on unsold signals.
+      const locked = !sig.sold && !isContractOwner;
+      const showOwned = owned || soldToMe;
+
+      card.className = "signal-card" + (sig.sold ? " sold" : "") + (showOwned ? " owned" : "");
+      const sportKey = (sig.sport || "").toUpperCase();
+      card.setAttribute("data-sport", sportKey);
+      card.setAttribute("data-signal-id", sig.id.toString());
+
+      const priceStr = sig.priceInYoda.toString();
+      let statusBadgeHtml;
+      if (showOwned) {
+        statusBadgeHtml = `<span class="status-badge owned">OWNED</span>`;
+      } else if (sig.sold) {
+        statusBadgeHtml = `<span class="status-badge sold">SOLD</span>`;
+      } else {
+        statusBadgeHtml = `<span class="status-badge available">AVAILABLE</span>`;
+      }
+
+      const idPadded = "#" + String(sig.id).padStart(3, "0");
+
+      // Parse edge for the card display
+      const details = parseSignalDetails(sig.description);
+      const edgeDisplay = details.edgePercent !== null && !isNaN(details.edgePercent)
+        ? (details.edgePercent >= 0 ? "+" : "") + details.edgePercent.toFixed(2) + "%"
+        : "—";
+
+      // Owner pill (tiny) — only if this account owns the listing as the seller
+      const ownerPillHtml = (isContractOwner && !sig.sold)
+        ? `<span class="owner-pill" title="You listed this signal">YOUR LISTING</span>`
+        : "";
+
+      card.innerHTML = `
+        <div class="signal-top">
+          <div class="signal-tags">
+            <span class="sport-pill">${escapeHtml(sig.sport)}</span>
+            <span class="market-type">${escapeHtml(sig.market)}</span>
+            ${ownerPillHtml}
+          </div>
+          <span class="signal-id">${idPadded}</span>
+        </div>
+        <div class="signal-hint">${escapeHtml(sig.previewHint)}</div>
+        <div class="signal-stats">
+          <div class="stat">
+            <div class="stat-label">Price</div>
+            <div class="stat-value accent">${priceStr}<span class="unit">${escapeHtml(yodaSymbol)}</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Edge %</div>
+            <div class="stat-value positive">${escapeHtml(edgeDisplay)}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Status</div>
+            <div class="stat-value">${statusBadgeHtml}</div>
+          </div>
+          <div class="stat action-slot"></div>
+        </div>
+        <div class="signal-description ${locked ? "locked" : ""}">${
+          locked
+            ? "██████████████████████████████\nPurchase to decrypt signal payload.\nAccess to full market edge locked\nuntil on-chain settlement confirmed."
+            : escapeHtml(sig.description)
+        }</div>
+      `;
+
+      const actionSlot = card.querySelector(".action-slot");
+      if (sig.sold) {
+        const label = document.createElement("span");
+        label.className = "action-slot-label";
+        label.textContent = showOwned ? "// YOURS" : "// SOLD OUT";
+        actionSlot.appendChild(label);
+      } else if (isContractOwner) {
+        // Owner's own listing: add a SHARE button (Change 2)
+        const shareBtn = document.createElement("button");
+        shareBtn.className = "share-btn";
+        shareBtn.type = "button";
+        shareBtn.textContent = "[ SHARE ]";
+        shareBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          shareSignal(sig);
+        });
+        actionSlot.appendChild(shareBtn);
+      } else {
+        const buyBtn = document.createElement("button");
+        buyBtn.className = "buy-btn";
+        buyBtn.type = "button";
+        buyBtn.textContent = "[ BUY SIGNAL ]";
+        buyBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // don't also open the modal
+          handleBuy(sig);
+        });
+        actionSlot.appendChild(buyBtn);
+      }
+
+      // Card click → open detail modal (Change 1). Buttons stopPropagation above.
+      card.addEventListener("click", () => openSignalDetail(sig, { owned: showOwned }));
+
+      return card;
+    }
+
+    // =========================================================================
+    // Signal detail modal
+    // =========================================================================
+    function openSignalDetail(sig, { owned = false } = {}) {
+      modalSignal = sig;
+      const isContractOwner = userAddress && userAddress.toLowerCase() === contractOwner;
+      const soldToMe = sig.sold && userAddress && sig.currentOwner.toLowerCase() === userAddress.toLowerCase();
+      const showOwned = owned || soldToMe;
+      const canSeeDescription = sig.sold || isContractOwner;
+
+      const details = parseSignalDetails(sig.description);
+
+      // Header
+      $("modalSignalId").textContent = "#" + String(sig.id).padStart(3, "0");
+
+      // Meta pills
+      const metaEl = $("modalMeta");
+      metaEl.innerHTML = "";
+      const mkPill = (text, cls = "sport-pill") => {
+        const s = document.createElement("span");
+        s.className = cls;
+        s.textContent = text;
+        return s;
+      };
+      metaEl.appendChild(mkPill(sig.sport));
+      const marketPill = document.createElement("span");
+      marketPill.className = "market-type";
+      marketPill.textContent = sig.market;
+      metaEl.appendChild(marketPill);
+      if (showOwned) {
+        const b = document.createElement("span");
+        b.className = "status-badge owned";
+        b.textContent = "OWNED";
+        metaEl.appendChild(b);
+      } else if (sig.sold) {
+        const b = document.createElement("span");
+        b.className = "status-badge sold";
+        b.textContent = "SOLD";
+        metaEl.appendChild(b);
+      } else {
+        const b = document.createElement("span");
+        b.className = "status-badge available";
+        b.textContent = "AVAILABLE";
+        metaEl.appendChild(b);
+      }
+      if (isContractOwner && !sig.sold) {
+        const p = document.createElement("span");
+        p.className = "owner-pill";
+        p.textContent = "YOUR LISTING";
+        metaEl.appendChild(p);
+      }
+
+      // Edge display (large green)
+      if (details.edgePercent !== null && !isNaN(details.edgePercent)) {
+        const sign = details.edgePercent >= 0 ? "+" : "";
+        $("modalEdge").textContent = sign + details.edgePercent.toFixed(2) + "%";
+        $("modalEdge").style.color = details.edgePercent >= 0 ? "var(--positive)" : "var(--negative)";
+        $("modalEdgeSub").textContent = details.edgePercent >= 0
+          ? "EV CONFIRMED POSITIVE"
+          : "EV NEGATIVE — REVIEW";
+      } else {
+        $("modalEdge").textContent = "—";
+        $("modalEdgeSub").textContent = canSeeDescription ? "NO EDGE DATA IN PAYLOAD" : "PURCHASE TO DECRYPT";
+      }
+
+      // Grid fields
+      $("modalSport").textContent = sig.sport || "—";
+      $("modalMarket").textContent = sig.market || "—";
+      if (details.oddsDecimal !== null && !isNaN(details.oddsDecimal)) {
+        $("modalOddsDec").textContent = details.oddsDecimal.toFixed(4);
+        const am = details.oddsAmerican || decimalToAmerican(details.oddsDecimal);
+        $("modalOddsAm").textContent = am || "—";
+      } else if (canSeeDescription) {
+        $("modalOddsDec").textContent = "—";
+        $("modalOddsAm").textContent = "—";
+      } else {
+        $("modalOddsDec").textContent = "[LOCKED]";
+        $("modalOddsAm").textContent = "[LOCKED]";
+      }
+      $("modalClosingLine").textContent = details.closingLine || (canSeeDescription ? "—" : "[LOCKED]");
+      $("modalMatchup").textContent = details.matchup || (canSeeDescription ? (details.betInfo || "—") : "[LOCKED]");
+
+      let statusText;
+      if (showOwned) statusText = "OWNED BY YOU";
+      else if (sig.sold) statusText = "SOLD";
+      else statusText = "AVAILABLE";
+      $("modalStatus").textContent = statusText;
+
+      // Description block
+      const descEl = $("modalDescription");
+      if (canSeeDescription) {
+        descEl.classList.remove("locked");
+        descEl.textContent = sig.description;
+      } else {
+        descEl.classList.add("locked");
+        descEl.textContent =
+          "██████████████████████████████\n" +
+          "ENCRYPTED SIGNAL PAYLOAD\n" +
+          "Purchase to decrypt full edge analysis,\n" +
+          "odds, closing line, and matchup data.\n" +
+          "██████████████████████████████";
+      }
+
+      // Price + buy button
+      $("modalPrice").textContent = sig.priceInYoda.toString();
+      const buyBtn = $("modalBuyBtn");
+      buyBtn.classList.remove("owned-state", "sold-state");
+      buyBtn.disabled = false;
+
+      if (showOwned) {
+        buyBtn.textContent = "[ OWNED BY YOU ]";
+        buyBtn.classList.add("owned-state");
+        buyBtn.disabled = true;
+      } else if (sig.sold) {
+        buyBtn.textContent = "[ SOLD OUT ]";
+        buyBtn.classList.add("sold-state");
+        buyBtn.disabled = true;
+      } else if (isContractOwner) {
+        buyBtn.textContent = "[ YOUR LISTING ]";
+        buyBtn.classList.add("owned-state");
+        buyBtn.disabled = true;
+      } else {
+        buyBtn.textContent = "[ BUY SIGNAL ]";
+      }
+
+      modalEl.classList.remove("hidden");
+    }
+
+    function closeSignalDetail() {
+      modalEl.classList.add("hidden");
+      modalSignal = null;
+    }
+
+    modalEl.addEventListener("click", (e) => {
+      if (e.target === modalEl) closeSignalDetail();
+    });
+    $("modalCloseBtn").addEventListener("click", closeSignalDetail);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !modalEl.classList.contains("hidden")) {
+        closeSignalDetail();
+      }
+    });
+    $("modalBuyBtn").addEventListener("click", async () => {
+      if (!modalSignal) return;
+      const sig = modalSignal;
+      const isContractOwner = userAddress && userAddress.toLowerCase() === contractOwner;
+      if (sig.sold || isContractOwner) return;
+      closeSignalDetail();
+      await handleBuy(sig);
+    });
+
+    // =========================================================================
+    // Marketplace + My Signals loaders
+    // =========================================================================
+    async function loadMarketplace() {
+      if (!marketContract) return;
+      try {
+        const all = await marketContract.getAllSignals();
+        signalCache = Array.isArray(all) ? all.slice() : [];
+        updateMetrics(signalCache);
+        renderMarketplaceFromCache();
+      } catch (err) {
+        console.error(err);
+        setStatus("// ERROR: FAILED TO LOAD MARKETPLACE — " + (err.message || err), "error");
+      }
+    }
+
+    async function loadMySignals() {
+      if (!marketContract) return;
+      mySignalsGrid.innerHTML = "";
+      try {
+        const ids = await marketContract.getMySignals();
+        if (!ids || ids.length === 0) {
+          mySignalsEmpty.classList.remove("hidden");
+          return;
+        }
+        mySignalsEmpty.classList.add("hidden");
+        for (const id of ids) {
+          const sig = await marketContract.getSignal(id);
+          mySignalsGrid.appendChild(renderSignalCard(sig, { owned: true }));
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus("// ERROR: FAILED TO LOAD OWNED SIGNALS — " + (err.message || err), "error");
+      }
+    }
+
+    // =========================================================================
+    // Buy flow: approve (if needed) -> buySignal — unchanged logic
+    // =========================================================================
+    async function handleBuy(sig) {
+      if (!marketContract || !yodaContract) return;
+      try {
+        const priceWei = ethers.BigNumber.from(sig.priceInYoda.toString())
+          .mul(ethers.BigNumber.from(10).pow(yodaDecimals));
+
+        const bal = await yodaContract.balanceOf(userAddress);
+        if (bal.lt(priceWei)) {
+          setStatus(
+            `// ERROR: INSUFFICIENT ${yodaSymbol} — REQUIRE ${sig.priceInYoda.toString()}, HAVE ${ethers.utils.formatUnits(bal, yodaDecimals)}`,
+            "error"
+          );
+          return;
+        }
+
+        const current = await yodaContract.allowance(userAddress, SIGNAL_MARKET_ADDRESS);
+        if (current.lt(priceWei)) {
+          setStatus(`Approving ${sig.priceInYoda.toString()} ${yodaSymbol}...`);
+          const approveTx = await yodaContract.approve(SIGNAL_MARKET_ADDRESS, priceWei);
+          logTx("APPROVE TX SUBMITTED", `<span class="hash">${approveTx.hash.slice(0,10)}...${approveTx.hash.slice(-6)}</span>`);
+          const approveReceipt = await approveTx.wait();
+          logTx("APPROVE TX CONFIRMED", `block <span class="block">#${approveReceipt.blockNumber}</span>`, "confirmed");
+          setStatus("Broadcasting purchase...", "success");
+        } else {
+          setStatus("Broadcasting purchase...");
+        }
+
+        const buyTx = await marketContract.buySignal(sig.id);
+        logTx("BUY TX SUBMITTED", `signal #${sig.id.toString()} · <span class="hash">${buyTx.hash.slice(0,10)}...${buyTx.hash.slice(-6)}</span>`);
+        setStatus("Awaiting confirmation...");
+        const buyReceipt = await buyTx.wait();
+        logTx("BUY TX CONFIRMED", `signal #${sig.id.toString()} · block <span class="block">#${buyReceipt.blockNumber}</span>`, "confirmed");
+
+        setStatus(`// SIGNAL #${sig.id.toString()} ACQUIRED — PAYLOAD DECRYPTED`, "success");
+        await refreshBalance();
+        await loadMarketplace();
+        await loadMySignals();
+      } catch (err) {
+        console.error(err);
+        const reason = err?.error?.message || err?.data?.message || err?.message || err;
+        setStatus("// ERROR: PURCHASE FAILED — " + reason, "error");
+        logTx("TX REVERTED", escapeHtml(String(reason).slice(0, 120)), "error");
+      }
+    }
+
+    // =========================================================================
+    // Owner: list new signal — unchanged
+    // =========================================================================
+    async function handleListSignal() {
+      if (!marketContract) return;
+      const sport = $("f_sport").value.trim();
+      const market = $("f_market").value.trim();
+      const previewHint = $("f_previewHint").value.trim();
+      const description = $("f_description").value.trim();
+      const price = $("f_price").value.trim();
+
+      if (!sport || !market || !previewHint || !description || !price) {
+        setStatus("// ERROR: ALL FIELDS REQUIRED", "error");
+        return;
+      }
+
+      try {
+        setStatus("Broadcasting listing...");
+        const tx = await marketContract.listSignal(sport, market, description, previewHint, price);
+        logTx("LIST TX SUBMITTED", `<span class="hash">${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}</span>`);
+        setStatus("Awaiting confirmation...");
+        const receipt = await tx.wait();
+        logTx("LIST TX CONFIRMED", `block <span class="block">#${receipt.blockNumber}</span>`, "confirmed");
+        setStatus("// SIGNAL LISTED — MARKETPLACE UPDATED", "success");
+
+        $("f_sport").value = "";
+        $("f_market").value = "";
+        $("f_previewHint").value = "";
+        $("f_description").value = "";
+        $("f_price").value = "";
+
+        await loadMarketplace();
+      } catch (err) {
+        console.error(err);
+        const reason = err?.error?.message || err?.data?.message || err?.message || err;
+        setStatus("// ERROR: LIST FAILED — " + reason, "error");
+        logTx("TX REVERTED", escapeHtml(String(reason).slice(0, 120)), "error");
+      }
+    }
+
+    // =========================================================================
+    // Filter / sort UI wiring
+    // =========================================================================
+    document.querySelectorAll(".sport-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".sport-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        filterSport = tab.getAttribute("data-sport");
+        renderMarketplaceFromCache();
+      });
+    });
+
+    marketFilterEl.addEventListener("change", () => {
+      filterMarket = marketFilterEl.value;
+      renderMarketplaceFromCache();
+    });
+
+    searchInput.addEventListener("input", () => {
+      filterSearch = searchInput.value;
+      searchClear.classList.toggle("hidden", filterSearch.length === 0);
+      renderMarketplaceFromCache();
+    });
+
+    searchClear.addEventListener("click", () => {
+      searchInput.value = "";
+      filterSearch = "";
+      searchClear.classList.add("hidden");
+      renderMarketplaceFromCache();
+      searchInput.focus();
+    });
+
+    document.querySelectorAll(".sort-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".sort-btn").forEach(b => {
+          b.classList.remove("active");
+          // reset any arrow markers
+          const sort = b.getAttribute("data-sort");
+          if (sort === "ev") b.textContent = "EV%";
+          else if (sort === "price") b.textContent = "PRICE";
+          else if (sort === "newest") b.textContent = "NEWEST";
+        });
+        btn.classList.add("active");
+        sortMode = btn.getAttribute("data-sort");
+        // Add descending arrow to the active
+        if (sortMode === "ev") btn.textContent = "EV% ▼";
+        else if (sortMode === "price") btn.textContent = "PRICE ▼";
+        else if (sortMode === "newest") btn.textContent = "NEWEST ▼";
+        renderMarketplaceFromCache();
+      });
+    });
+
+    // =========================================================================
+    // Init
+    // =========================================================================
+    connectBtn.addEventListener("click", connectWallet);
+    $("listBtn").addEventListener("click", handleListSignal);
+
+    // If the wallet is already connected (e.g. page reload), auto-connect
+    window.addEventListener("load", async () => {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        connectWallet();
+      }
+    });
+  </script>
+</body>
+</html>
