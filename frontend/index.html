@@ -527,8 +527,8 @@
     }
 
     .player-avatar {
-      width: 52px;
-      height: 52px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
       border: 2px solid var(--border-strong);
       background: var(--bg);
@@ -2544,7 +2544,13 @@
     // Works against either the full description or the previewHint, so locked
     // signals still render meaningful headline data.
     // =========================================================================
+    // Order matters: longer / compound patterns first so they win the
+    // earliest-indexOf race against their constituent words.
     const STAT_KEYWORDS = [
+      "Total Points & Rebounds & Assists",
+      "Total Points & Rebounds",
+      "Total Points & Assists",
+      "Total Rebounds & Assists",
       "Total Bases", "Earned Runs", "Hits Allowed", "Outs Recorded",
       "Total Runs", "Run Line",
       "Strikeouts", "Rebounds", "Assists", "Points",
@@ -2556,7 +2562,11 @@
       "Steals": "STL", "Blocks": "BLK", "Turnovers": "TO",
       "Strikeouts": "K", "Walks": "BB", "Hits Allowed": "HA",
       "Earned Runs": "ER", "Outs Recorded": "OUT", "Total Bases": "TB",
-      "Total Runs": "TOT", "Run Line": "RL"
+      "Total Runs": "TOT", "Run Line": "RL",
+      "Total Points & Rebounds": "PTS+REB",
+      "Total Points & Assists": "PTS+AST",
+      "Total Rebounds & Assists": "REB+AST",
+      "Total Points & Rebounds & Assists": "PRA"
     };
 
     const TEAM_ABBR = {
@@ -2659,22 +2669,24 @@
           }
         }
 
+        // Tokenize player name; drop pure-number tokens (stray digits like "2"
+        // sometimes appear between line and player name)
+        const cleanPlayer = (raw) =>
+          raw.split(/\s+/)
+             .filter(t => t && !/^-?[\d.]+$/.test(t))
+             .join(" ");
+
         if (statIdx > -1) {
-          player = rest.slice(0, statIdx).trim();
+          player = cleanPlayer(rest.slice(0, statIdx).trim());
           if (!matchup) {
             const after = rest.slice(statIdx + stat.length).trim();
             if (after.includes(" at ")) matchup = after;
           }
         } else {
-          // No stat keyword detected — best-effort: take 2 words before " at "
+          // No stat keyword detected — best-effort: take ≤3 non-numeric words before " at "
           const atIdx = rest.indexOf(" at ");
-          if (atIdx > -1) {
-            const before = rest.slice(0, atIdx).trim();
-            const words = before.split(/\s+/);
-            player = words.slice(0, 2).join(" ");
-          } else {
-            player = rest.split(/\s+/).slice(0, 2).join(" ");
-          }
+          const before = atIdx > -1 ? rest.slice(0, atIdx).trim() : rest;
+          player = cleanPlayer(before).split(/\s+/).slice(0, 3).join(" ");
         }
       }
 
@@ -2715,11 +2727,18 @@
       return html;
     }
 
-    function avatarUrl(playerName) {
-      const name = (playerName || "?").trim() || "?";
-      const url = "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) +
-                  "&background=1a2744&color=00D4AA&size=128&bold=true&rounded=true";
-      return url;
+    /**
+     * Build a UI Avatars URL. If the name is empty, too short, or numeric
+     * (junk that produces a blank "·" avatar), fall back to the sport label
+     * (e.g. "NBA", "MLB") so we always render real initials.
+     */
+    function avatarUrl(playerName, fallback) {
+      let name = (playerName || "").trim();
+      const looksJunk = !name || name.length < 3 || /^-?[\d.\s]+$/.test(name);
+      if (looksJunk) name = (fallback || "").trim() || "?";
+      if (name.length < 1) name = "?";
+      return "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) +
+             "&background=1a2744&color=00D4AA&size=128&bold=true&rounded=true";
     }
 
     /**
@@ -2791,7 +2810,10 @@
         ? (ev >= 0 ? "+" : "") + ev.toFixed(1) + "%"
         : "—";
 
-      const playerName = meta.player || sig.sport || "Signal";
+      // Reject empty / too-short / numeric player names — fall back to sport
+      const rawPlayer = (meta.player || "").trim();
+      const playerLooksJunk = !rawPlayer || rawPlayer.length < 3 || /^-?[\d.\s]+$/.test(rawPlayer);
+      const playerName = playerLooksJunk ? (sig.sport || "Signal") : rawPlayer;
       const positionText = meta.statAbbr || (meta.stat ? meta.stat.toUpperCase() : "PROP");
       const teamText = sportKey || "—";
 
@@ -2828,7 +2850,7 @@
       card.innerHTML = `
         <div class="card-top">
           <div class="card-top-left">
-            <img class="player-avatar" src="${escapeHtml(avatarUrl(playerName))}" alt="${escapeHtml(playerName)}" loading="lazy"/>
+            <img class="player-avatar" src="${escapeHtml(avatarUrl(playerName, sig.sport))}" alt="${escapeHtml(playerName)}" loading="lazy"/>
             <div class="player-info">
               <div class="player-name">${escapeHtml(playerName)}</div>
               <div class="player-meta">${escapeHtml(positionText)} | ${escapeHtml(teamText)}</div>
