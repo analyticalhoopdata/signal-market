@@ -19,7 +19,7 @@ const { parse } = require("csv-parse/sync");
 // =========================================================================
 // Constants
 // =========================================================================
-const SIGNAL_MARKET_ADDRESS = "0xd149506D13656039084c01D5038146648e43Aa08";
+const SIGNAL_MARKET_ADDRESS = "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73";
 const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 
 const ABI = [

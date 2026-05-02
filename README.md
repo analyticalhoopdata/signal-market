@@ -232,5 +232,5 @@ These are acceptable simplifications for the CSE 426/526 assignment and keep the
 - Average transaction fee: 0.00259 ETH
 - Transaction rate: 1.2 transactions/hour
 - Total gas spent: 0.03111 ETH
-- Contract: 0xd149506D13656039084c01D5038146648e43Aa08
-- Etherscan: https://sepolia.etherscan.io/address/0xd149506D13656039084c01D5038146648e43Aa08
+- Contract: 0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73
+- Etherscan: https://sepolia.etherscan.io/address/0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73
