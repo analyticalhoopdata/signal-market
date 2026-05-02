@@ -983,6 +983,59 @@
       background: #D97706;
     }
 
+    /* "OWNED" pill on sold cards where the buyer is the connected wallet */
+    .signal-card .owned-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(0, 212, 170, 0.15);
+      border: 1px solid var(--primary);
+      padding: 8px 16px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      cursor: default;
+    }
+
+    /* "SOLD OUT" pill on sold cards where the buyer is someone else */
+    .signal-card .sold-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      cursor: not-allowed;
+    }
+
+    /* Inline loading-state styling for buy buttons during approve/buy flow */
+    .signal-card .buy-btn.loading,
+    .modal-buy-btn.loading {
+      background: var(--gold) !important;
+      border-color: var(--gold) !important;
+      color: var(--bg) !important;
+      cursor: progress;
+    }
+
+    .signal-card .buy-btn.success,
+    .modal-buy-btn.success {
+      background: var(--positive) !important;
+      border-color: var(--positive) !important;
+      color: var(--bg) !important;
+    }
+
+    .signal-card .buy-btn.failed,
+    .modal-buy-btn.failed {
+      background: rgba(248, 81, 73, 0.12) !important;
+      border-color: var(--negative) !important;
+      color: var(--negative) !important;
+    }
+
     /* Modal also uses .buy-btn fallback styling — keep cross-context buy-btn rule */
     .buy-btn {
       font-family: 'JetBrains Mono', monospace;
@@ -2949,13 +3002,20 @@
       `;
 
       const actionSlot = card.querySelector(".action-slot");
-      if (sig.sold) {
-        const label = document.createElement("span");
-        label.className = "action-slot-label";
-        label.textContent = showOwned ? "// YOURS" : "// SOLD OUT";
-        actionSlot.appendChild(label);
+      if (sig.sold && showOwned) {
+        // Buyer is the connected wallet — render a green OWNED pill (button-styled, not interactive)
+        const ownedPill = document.createElement("span");
+        ownedPill.className = "owned-pill";
+        ownedPill.textContent = "[ OWNED ✓ ]";
+        actionSlot.appendChild(ownedPill);
+      } else if (sig.sold) {
+        // Sold to someone else — render a greyed-out SOLD OUT pill
+        const soldPill = document.createElement("span");
+        soldPill.className = "sold-pill";
+        soldPill.textContent = "[ SOLD OUT ]";
+        actionSlot.appendChild(soldPill);
       } else if (isContractOwner) {
-        // Owner's own listing: DEMO BUY + SHARE
+        // Owner's own listing: DEMO BUY + SHARE (contract forbids owner self-buy)
         const demoBuyBtn = document.createElement("button");
         demoBuyBtn.className = "demo-buy-btn";
         demoBuyBtn.type = "button";
@@ -2977,13 +3037,14 @@
         });
         actionSlot.appendChild(shareBtn);
       } else {
+        // Non-owner, available signal — real buy flow with inline state on the button
         const buyBtn = document.createElement("button");
         buyBtn.className = "buy-btn";
         buyBtn.type = "button";
-        buyBtn.textContent = "[ BUY ]";
+        buyBtn.textContent = "[ BUY SIGNAL ]";
         buyBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          handleBuy(sig);
+          handleBuy(sig, buyBtn);
         });
         actionSlot.appendChild(buyBtn);
       }
@@ -3097,14 +3158,14 @@
           "██████████████████████████████";
       }
 
-      // Price + buy button
+      // Price + buy button (always reads sig.priceInYoda — direct from getSignal())
       $("modalPrice").textContent = sig.priceInYoda.toString();
       const buyBtn = $("modalBuyBtn");
-      buyBtn.classList.remove("owned-state", "sold-state", "demo-state");
+      buyBtn.classList.remove("owned-state", "sold-state", "demo-state", "loading", "success", "failed");
       buyBtn.disabled = false;
 
       if (showOwned) {
-        buyBtn.textContent = "[ OWNED BY YOU ]";
+        buyBtn.textContent = "[ OWNED ✓ ]";
         buyBtn.classList.add("owned-state");
         buyBtn.disabled = true;
       } else if (sig.sold) {
@@ -3149,8 +3210,12 @@
         openDemoBuyModal(sig);
         return;
       }
+      // Keep modal open so the button can show APPROVING.../BUYING.../✓ SUCCESS!
+      // states. handleBuy refreshes loadMarketplace + loadMySignals on success;
+      // we close the modal afterwards so the user sees the OWNED card.
+      const buyBtn = $("modalBuyBtn");
+      await handleBuy(sig, buyBtn);
       closeSignalDetail();
-      await handleBuy(sig);
     });
 
     // =========================================================================
@@ -3219,48 +3284,91 @@
     // =========================================================================
     // Buy flow: approve (if needed) -> buySignal — unchanged logic
     // =========================================================================
-    async function handleBuy(sig) {
+    /**
+     * Execute approve + buySignal as the connected (non-owner) wallet.
+     *
+     * `button` is optional — when supplied, its text and CSS classes are
+     * updated inline so the user sees real-time progress on the clicked
+     * button (`APPROVING...` → `BUYING...` → `✓ SUCCESS!` or `FAILED`).
+     * The clicked button is also disabled during the flow to prevent
+     * double-submits while MetaMask popups are pending.
+     */
+    async function handleBuy(sig, button = null) {
       if (!marketContract || !yodaContract) return;
+
+      const originalText = button ? button.textContent : null;
+      const originalDisabled = button ? button.disabled : false;
+      const setBtn = (text, cls) => {
+        if (!button) return;
+        button.textContent = text;
+        button.disabled = true;
+        button.classList.remove("loading", "success", "failed");
+        if (cls) button.classList.add(cls);
+      };
+      const restoreBtn = () => {
+        if (!button) return;
+        button.textContent = originalText;
+        button.disabled = originalDisabled;
+        button.classList.remove("loading", "success", "failed");
+      };
+
       try {
         const priceWei = ethers.BigNumber.from(sig.priceInYoda.toString())
           .mul(ethers.BigNumber.from(10).pow(yodaDecimals));
 
+        // Pre-flight: check YODA balance
+        setBtn("[ CHECKING... ]", "loading");
         const bal = await yodaContract.balanceOf(userAddress);
         if (bal.lt(priceWei)) {
+          const need = sig.priceInYoda.toString();
+          const have = ethers.utils.formatUnits(bal, yodaDecimals);
           setStatus(
-            `// ERROR: INSUFFICIENT ${yodaSymbol} — REQUIRE ${sig.priceInYoda.toString()}, HAVE ${ethers.utils.formatUnits(bal, yodaDecimals)}`,
+            `// INSUFFICIENT ${yodaSymbol} BALANCE — Need ${need} ${yodaSymbol}, have ${have} ${yodaSymbol}`,
             "error"
           );
+          setBtn("[ INSUFFICIENT YODA ]", "failed");
+          setTimeout(restoreBtn, 3500);
           return;
         }
 
+        // Step 1: approve (only if allowance is short)
         const current = await yodaContract.allowance(userAddress, SIGNAL_MARKET_ADDRESS);
         if (current.lt(priceWei)) {
+          setBtn("[ APPROVING... ]", "loading");
           setStatus(`Approving ${sig.priceInYoda.toString()} ${yodaSymbol}...`);
           const approveTx = await yodaContract.approve(SIGNAL_MARKET_ADDRESS, priceWei);
           logTx("APPROVE TX SUBMITTED", `<span class="hash">${approveTx.hash.slice(0,10)}...${approveTx.hash.slice(-6)}</span>`);
           const approveReceipt = await approveTx.wait();
           logTx("APPROVE TX CONFIRMED", `block <span class="block">#${approveReceipt.blockNumber}</span>`, "confirmed");
-          setStatus("Broadcasting purchase...", "success");
-        } else {
-          setStatus("Broadcasting purchase...");
         }
 
+        // Step 2: buySignal
+        setBtn("[ BUYING... ]", "loading");
+        setStatus("Broadcasting purchase...");
         const buyTx = await marketContract.buySignal(sig.id);
         logTx("BUY TX SUBMITTED", `signal #${sig.id.toString()} · <span class="hash">${buyTx.hash.slice(0,10)}...${buyTx.hash.slice(-6)}</span>`);
         setStatus("Awaiting confirmation...");
         const buyReceipt = await buyTx.wait();
         logTx("BUY TX CONFIRMED", `signal #${sig.id.toString()} · block <span class="block">#${buyReceipt.blockNumber}</span>`, "confirmed");
 
+        // Success state — held briefly so the user sees the green flash
+        setBtn("[ ✓ SUCCESS! ]", "success");
         setStatus(`// SIGNAL #${sig.id.toString()} ACQUIRED — PAYLOAD DECRYPTED`, "success");
+        await new Promise(r => setTimeout(r, 700));
+
         await refreshBalance();
         await loadMarketplace();
         await loadMySignals();
+        // Note: loadMarketplace re-renders cards so the in-card button is
+        // replaced with the new "OWNED" pill automatically.
       } catch (err) {
         console.error(err);
         const reason = err?.error?.message || err?.data?.message || err?.message || err;
+        const short = String(reason).slice(0, 80);
         setStatus("// ERROR: PURCHASE FAILED — " + reason, "error");
         logTx("TX REVERTED", escapeHtml(String(reason).slice(0, 120)), "error");
+        setBtn("[ FAILED — RETRY ]", "failed");
+        setTimeout(restoreBtn, 4000);
       }
     }
 
