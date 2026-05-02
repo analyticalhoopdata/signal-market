@@ -13,9 +13,9 @@ const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 const YODA_TOKEN_ADDRESS = "0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2";
 const SIGNAL_MARKET_ADDRESS = "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73";
 
-// Sized for the post-Jakir 100 YODA owner balance: send 25 YODA to the buyer
-// which covers 5 buys at the new flat 5 YODA/signal price.
-const FUND_AMOUNT_YODA = 25;
+// Sized so the buyer can comfortably exercise the 1-5 YODA price band
+// listed by listSignals.js: 10 YODA covers 2-10 test buys depending on price.
+const FUND_AMOUNT_YODA = 10;
 
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",

@@ -2260,13 +2260,31 @@
     }
 
     // =========================================================================
+    // Legacy-price filter
+    // Early test listings used edge-scaled prices (304-867 YODA) before the
+    // course YODA distribution. Hide anything > 10 YODA so the marketplace
+    // only surfaces affordable, current-batch signals.
+    // The on-chain priceInYoda IS the source of truth; this is a *display*
+    // filter only — never a transform. UI price === contract.signals[id].priceInYoda.
+    // =========================================================================
+    function isLegacySignal(sig) {
+      try {
+        return Number(sig.priceInYoda.toString()) > 10;
+      } catch (_) { return false; }
+    }
+
+    function isHiddenSignal(sig) {
+      return isPlaceholderSignal(sig) || isLegacySignal(sig);
+    }
+
+    // =========================================================================
     // Filter / sort pipeline
     // =========================================================================
     function applyFilters(signals) {
       const q = filterSearch.trim().toLowerCase();
       return signals.filter(sig => {
-        // Hide placeholders always
-        if (isPlaceholderSignal(sig)) return false;
+        // Hide placeholders + legacy high-priced signals
+        if (isHiddenSignal(sig)) return false;
 
         // Sport tab
         if (filterSport !== "ALL") {
@@ -2337,7 +2355,7 @@
       // the current market/search state).
       const q = filterSearch.trim().toLowerCase();
       const baseline = allVisibleSignals.filter(sig => {
-        if (isPlaceholderSignal(sig)) return false;
+        if (isHiddenSignal(sig)) return false;
         if (filterMarket) {
           const market = sig.market || "";
           if (filterMarket === "Pitcher Props") {
@@ -2378,7 +2396,7 @@
       const visible = applyFilters(signalCache);
       const sorted = sortSignals(visible);
 
-      const totalAfterPlaceholderFilter = signalCache.filter(s => !isPlaceholderSignal(s)).length;
+      const totalAfterPlaceholderFilter = signalCache.filter(s => !isHiddenSignal(s)).length;
       $("filterCount").textContent = String(sorted.length);
       $("filterTotal").textContent = String(totalAfterPlaceholderFilter);
 
@@ -2795,7 +2813,7 @@
         $("hs_avgEdge").textContent = "—";
         return;
       }
-      const visible = all.filter(s => !isPlaceholderSignal(s));
+      const visible = all.filter(s => !isHiddenSignal(s));
       $("hs_total").textContent = String(visible.length);
 
       let elite = 0, sum = 0, count = 0;

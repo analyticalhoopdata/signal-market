@@ -134,9 +134,10 @@ function buildSignalParams(row) {
     "\nMatchup: " + matchup +
     "\nSource: ProphetX | Settled: WIN";
 
-  // Flat 5 YODA per signal — set after Jakir's 100 YODA distribution
-  // so prices fit within the buyer's allotment (was: max(50, ev * 1500))
-  const priceInYoda = 5;
+  // Random 1–5 YODA per signal so the buyer (~10 YODA budget) can afford
+  // multiple buys. The value listed here IS the on-chain price; the frontend
+  // reads it back via getAllSignals() — so UI price always matches chain.
+  const priceInYoda = Math.floor(Math.random() * 5) + 1;
 
   return { sport, market, description, previewHint, priceInYoda };
 }
@@ -218,14 +219,20 @@ async function main() {
 
   // --- Sort by EV descending, take top 10 ---
   unique.sort((a, b) => parseFloat(b.ev) - parseFloat(a.ev));
-  const selected = unique.slice(0, 10);
+  const selected = unique.slice(0, 5);
 
-  console.log("Selected top 10 by edge:\n");
+  // Build params ONCE per row so the preview log matches what gets listed.
+  // (priceInYoda uses Math.random(); calling buildSignalParams twice per row
+  // produced two different prices — preview vs on-chain — exactly the kind
+  // of UI/chain divergence we want to avoid.)
+  const buildOutputs = selected.map(buildSignalParams);
+
+  console.log("Selected top " + selected.length + " by edge:\n");
 
   // Preview table
   selected.forEach((row, i) => {
     const ev = parseFloat(row.ev);
-    const params = buildSignalParams(row);
+    const params = buildOutputs[i];
     console.log(
       `  ${String(i + 1).padStart(2)}. [${params.sport}] ${params.market}`
     );
@@ -254,7 +261,7 @@ async function main() {
 
   for (let i = 0; i < selected.length; i++) {
     const row = selected[i];
-    const params = buildSignalParams(row);
+    const params = buildOutputs[i];
 
     console.log(`Listing signal ${i + 1}/${selected.length}: ${params.previewHint.slice(0, 80)}`);
 

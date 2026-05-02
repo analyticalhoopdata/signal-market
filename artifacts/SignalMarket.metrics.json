@@ -2,10 +2,10 @@
   "contract": "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73",
   "chain": "Sepolia",
   "chainId": 11155111,
-  "computedAt": "2026-05-02T12:19:38.544Z",
-  "txCount": 26,
-  "totalGasEth": "0.015463881296000717",
-  "averageFeeEth": "0.000594764665230796",
+  "computedAt": "2026-05-02T13:10:11.895Z",
+  "txCount": 32,
+  "totalGasEth": "0.018729942369776938",
+  "averageFeeEth": "0.000585310699055529",
   "deployTx": "0x7bd70bbd9de43be9401cb0601b1a6cda1abe1a3cc2e67374a5b6aa6ac89ecfbf",
   "transactions": [
     {
@@ -215,6 +215,54 @@
       "gasPrice": "1500000021",
       "feeWei": "116365501629117",
       "feeEth": "0.000116365501629117"
+    },
+    {
+      "hash": "0x9b6c57a702e58e761ad027b67989260ca06db5c62713349e71b3749f9b91856c",
+      "block": 10775359,
+      "gasUsed": "419249",
+      "gasPrice": "1500000033",
+      "feeWei": "628873513835217",
+      "feeEth": "0.000628873513835217"
+    },
+    {
+      "hash": "0x2dd211064a0d7432c8c215240cb063bd9e7a8810a8f662405fc411daf84354e5",
+      "block": 10775360,
+      "gasUsed": "418973",
+      "gasPrice": "1500000034",
+      "feeWei": "628459514245082",
+      "feeEth": "0.000628459514245082"
+    },
+    {
+      "hash": "0x88978cd06370dbed7b0e07a925430c537f38e981d3f3b9b3f210813633dec93c",
+      "block": 10775361,
+      "gasUsed": "418877",
+      "gasPrice": "1500000034",
+      "feeWei": "628315514241818",
+      "feeEth": "0.000628315514241818"
+    },
+    {
+      "hash": "0xe78c981e528f51899c3ff0da84691158399dbc33be4e1cbd00ef138729a600c4",
+      "block": 10775362,
+      "gasUsed": "418925",
+      "gasPrice": "1500000034",
+      "feeWei": "628387514243450",
+      "feeEth": "0.00062838751424345"
+    },
+    {
+      "hash": "0x6f03bb487f1aa987eb20ad74dfc1ae2c988bfd2cf2c865ca02efc2e0bb5cbb1a",
+      "block": 10775363,
+      "gasUsed": "418973",
+      "gasPrice": "1500000034",
+      "feeWei": "628459514245082",
+      "feeEth": "0.000628459514245082"
+    },
+    {
+      "hash": "0xdef9e0832cd37e5abdfe9373bc876c74334c9cbed0c6ea292ccb90e3dbe689cd",
+      "block": 10775368,
+      "gasUsed": "82377",
+      "gasPrice": "1500000036",
+      "feeWei": "123565502965572",
+      "feeEth": "0.000123565502965572"
     }
   ]
 }
