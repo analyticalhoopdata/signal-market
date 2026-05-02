@@ -10,18 +10,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
   <style>
     :root {
-      --bg: #080B0F;
-      --surface: #0D1117;
-      --panel: #161B22;
-      --border: #21262D;
-      --border-strong: #30363D;
+      --bg: #0A1628;
+      --surface: #1A2744;
+      --panel: #1A2744;
+      --border: #2A3F5F;
+      --border-strong: #3D5277;
       --primary: #00D4AA;
-      --secondary: #58A6FF;
+      --secondary: #3B82F6;
       --positive: #3FB950;
       --negative: #F85149;
-      --warn: #D29922;
-      --muted: #8B949E;
-      --text: #E6EDF3;
+      --warn: #F59E0B;
+      --muted: #94A3B8;
+      --text: #E2E8F0;
+      --gold: #F59E0B;
+      --star: #F59E0B;
+      --blue: #3B82F6;
+      --under-pink: #FF7A93;
       --nfl: #FF4B4B;
       --nba: #FF8C00;
       --soccer: #00D4AA;
@@ -466,70 +470,419 @@
     }
 
     /* =========================================================================
-       SIGNAL CARDS
+       SIGNAL CARDS — Betalytics-style prop cards
        ========================================================================= */
     .signal-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
     }
 
     .signal-card {
       position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--default-sport);
-      border-radius: 2px;
-      padding: 16px 20px;
-      animation: fadeIn 0.18s ease;
+      border-radius: 12px;
+      padding: 18px 18px 16px;
       cursor: pointer;
-      transition: border-color 0.12s ease;
+      animation: fadeIn 0.18s ease;
+      transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .signal-card:hover {
       border-color: var(--border-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .signal-card.sold { opacity: 0.55; }
+
+    .signal-card.owned {
+      border-color: rgba(0, 212, 170, 0.55);
+      box-shadow: inset 0 0 0 1px rgba(0, 212, 170, 0.12);
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; transform: translateY(2px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .signal-card[data-sport="NFL"] { border-left-color: var(--nfl); }
-    .signal-card[data-sport="NBA"] { border-left-color: var(--nba); }
-    .signal-card[data-sport="SOCCER"] { border-left-color: var(--soccer); }
-    .signal-card[data-sport="MLB"] { border-left-color: #9B6DFF; }
-    .signal-card[data-sport="NHL"] { border-left-color: #58A6FF; }
-
-    .signal-card.owned {
-      border-left-color: var(--positive);
+    /* ---- Top row: avatar + player info | tier badge + stars ---- */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
     }
 
-    .signal-card.sold {
-      opacity: 0.6;
+    .card-top-left {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      flex: 1;
     }
 
-    .signal-top {
+    .player-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--border-strong);
+      background: var(--bg);
+      flex-shrink: 0;
+      object-fit: cover;
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .player-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 170px;
+    }
+
+    .player-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .card-top-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    /* Tier badges */
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      line-height: 1;
+    }
+
+    .tier-badge.elite {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--gold);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .tier-badge.premium {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--blue);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .tier-badge.quality {
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    .stars {
+      display: inline-flex;
+      gap: 1px;
+      font-size: 11px;
+      color: var(--star);
+      line-height: 1;
+    }
+
+    .stars .empty { color: var(--border-strong); }
+
+    /* Matchup line + signal id */
+    .matchup-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .matchup-line .matchup-text {
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .matchup-line .dot {
+      color: var(--border-strong);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .matchup-line .timing {
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.6px;
+    }
+
+    .signal-id-tag {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      margin-left: auto;
+    }
+
+    /* Market pill + sportsbook */
+    .market-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .market-pill {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      padding: 4px 9px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      background: rgba(0, 212, 170, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+
+    .sportsbook {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    /* Big bet line + edge badge */
+    .bet-line-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      gap: 10px;
+      padding: 2px 0;
     }
 
-    .signal-tags {
+    .bet-line {
+      font-family: 'Inter', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.4px;
+      line-height: 1.1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bet-line .pick {
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .bet-line .pick.over { color: var(--primary); }
+    .bet-line .pick.under { color: var(--under-pink); }
+    .bet-line .line-num { color: var(--text); margin-right: 8px; }
+
+    .bet-line .stat-suffix {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+      text-transform: none;
+    }
+
+    .edge-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 212, 170, 0.18);
+      color: var(--primary);
+      border: 1px solid rgba(0, 212, 170, 0.45);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .edge-badge.flat {
+      background: rgba(148, 163, 184, 0.08);
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    /* 4-cell stat grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      background: rgba(10, 22, 40, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 0;
+    }
+
+    .stat-cell {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      padding: 0 6px;
+    }
+
+    .stat-cell + .stat-cell {
+      border-left: 1px solid var(--border);
+    }
+
+    .stat-cell-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .stat-cell-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 100%;
+      text-align: center;
+    }
+
+    .stat-cell-value.up { color: var(--primary); }
+    .stat-cell-value.gold { color: var(--gold); }
+    .stat-cell-value.dim { color: var(--muted); }
+    .stat-cell-value.over { color: var(--primary); }
+    .stat-cell-value.under { color: var(--under-pink); }
+    .stat-cell-value.danger { color: var(--negative); }
+
+    /* Footer: price + action button */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      margin-top: 2px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
     }
 
+    .card-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.2px;
+    }
+
+    .card-price .currency {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Status pill at top of card area (used in stat-grid Status cell) */
+    .status-pill {
+      display: inline-flex;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .status-pill.available {
+      color: var(--primary);
+      background: rgba(0, 212, 170, 0.12);
+      border: 1px solid rgba(0, 212, 170, 0.4);
+    }
+    .status-pill.sold {
+      color: var(--negative);
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid rgba(248, 81, 73, 0.4);
+    }
+    .status-pill.owned {
+      color: var(--primary);
+      background: rgba(0, 212, 170, 0.18);
+      border: 1px solid rgba(0, 212, 170, 0.5);
+    }
+
+    /* "YOUR LISTING" pill — stacks below ELITE/stars in card-top-right */
+    .signal-card .corner-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--warn);
+      border: 1px solid var(--warn);
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: rgba(245, 158, 11, 0.08);
+      line-height: 1;
+    }
+
+    /* Modal — keeps using sport-pill / market-type / status-badge / owner-pill */
     .sport-pill {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       font-weight: 700;
       padding: 3px 8px;
       border: 1px solid var(--border-strong);
-      border-radius: 2px;
+      border-radius: 3px;
       letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--text);
@@ -544,74 +897,13 @@
       letter-spacing: 1px;
     }
 
-    .signal-id {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
-
-    .signal-hint {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-      margin: 10px 0 14px 0;
-      line-height: 1.4;
-      letter-spacing: 0.2px;
-    }
-
-    .signal-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      gap: 18px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-      align-items: end;
-    }
-
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
-    }
-
-    .stat-label {
-      font-family: 'Inter', sans-serif;
-      font-size: 9px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1.1px;
-    }
-
-    .stat-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.2;
-    }
-
-    .stat-value.accent { color: var(--primary); }
-    .stat-value.positive { color: var(--positive); }
-    .stat-value.mono { text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
-
-    .stat-value .unit {
-      font-size: 10px;
-      color: var(--muted);
-      font-weight: 500;
-      margin-left: 4px;
-    }
-
     .status-badge {
       display: inline-block;
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
       font-weight: 700;
       padding: 3px 7px;
-      border-radius: 2px;
+      border-radius: 3px;
       letter-spacing: 1px;
       border: 1px solid;
     }
@@ -630,40 +922,68 @@
       background: rgba(63, 185, 80, 0.06);
     }
 
-    .signal-description {
-      margin-top: 14px;
-      padding: 12px 14px 12px 14px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 2px;
+    .owner-pill {
+      display: inline-block;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--text);
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .signal-description::before {
-      content: "// SIGNAL PAYLOAD — DECRYPTED";
-      display: block;
-      font-size: 9px;
-      color: var(--primary);
-      letter-spacing: 1.2px;
-      margin-bottom: 8px;
+      font-size: 8px;
       font-weight: 700;
+      color: var(--warn);
+      border: 1px solid var(--warn);
+      padding: 2px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      line-height: 1;
+      background: rgba(245, 158, 11, 0.08);
     }
 
-    .signal-description.locked {
+    /* Card BUY / DEMO BUY / SHARE buttons */
+    .signal-card .buy-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--bg);
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      transition: background 0.12s ease;
+    }
+
+    .signal-card .buy-btn:hover:not(:disabled) {
+      background: #00B894;
+    }
+
+    .signal-card .buy-btn:disabled {
       color: var(--muted);
-      font-style: normal;
+      background: transparent;
+      border-color: var(--border);
+      cursor: not-allowed;
     }
 
-    .signal-description.locked::before {
-      content: "// SIGNAL PAYLOAD — ENCRYPTED";
-      color: var(--muted);
+    .signal-card .demo-buy-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--bg);
+      background: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+      transition: background 0.12s ease;
     }
 
+    .signal-card .demo-buy-btn:hover {
+      background: #D97706;
+    }
+
+    /* Modal also uses .buy-btn fallback styling — keep cross-context buy-btn rule */
     .buy-btn {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
@@ -672,7 +992,7 @@
       background: transparent;
       border: 1px solid var(--primary);
       padding: 9px 16px;
-      border-radius: 2px;
+      border-radius: 4px;
       cursor: pointer;
       letter-spacing: 1px;
       white-space: nowrap;
@@ -697,7 +1017,7 @@
       background: transparent;
       border: 1px solid var(--secondary);
       padding: 7px 12px;
-      border-radius: 2px;
+      border-radius: 4px;
       cursor: pointer;
       letter-spacing: 0.8px;
       white-space: nowrap;
@@ -705,7 +1025,7 @@
     }
 
     .share-btn:hover {
-      background: rgba(88, 166, 255, 0.08);
+      background: rgba(59, 130, 246, 0.1);
     }
 
     .action-slot {
@@ -717,26 +1037,69 @@
     .action-slot-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
+      font-weight: 600;
       color: var(--muted);
       letter-spacing: 0.8px;
       text-transform: uppercase;
       white-space: nowrap;
     }
 
-    /* Small "YOUR LISTING" pill tag */
-    .owner-pill {
-      display: inline-block;
+    /* =========================================================================
+       HEADER STATS BAR — 4 boxes (Betalytics-style top stats)
+       ========================================================================= */
+    .header-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.12s ease;
+    }
+
+    .stat-box:hover { border-color: var(--border-strong); }
+
+    .stat-box-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 700;
-      color: var(--warn);
-      border: 1px solid var(--warn);
-      padding: 2px 5px;
-      border-radius: 2px;
-      letter-spacing: 0.8px;
+      color: var(--muted);
+      letter-spacing: 1.2px;
       text-transform: uppercase;
-      line-height: 1;
-      background: rgba(210, 153, 34, 0.06);
+    }
+
+    .stat-box-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+    }
+
+    .stat-box-value.gold { color: var(--gold); }
+    .stat-box-value.up { color: var(--primary); }
+
+    .stat-box-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      margin-top: 2px;
     }
 
     /* =========================================================================
@@ -1367,6 +1730,10 @@
     /* =========================================================================
        RESPONSIVE
        ========================================================================= */
+    @media (max-width: 1100px) {
+      .signal-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 900px) {
       header {
         grid-template-columns: 1fr;
@@ -1375,7 +1742,6 @@
       .clock { text-align: left; }
       .wallet-cluster { justify-content: flex-start; }
       .form-row { grid-template-columns: 1fr; }
-      .signal-stats { grid-template-columns: 1fr 1fr; row-gap: 14px; }
       .metrics-bar { gap: 12px; font-size: 10px; }
       .filter-bar { gap: 12px; }
       .filter-right { margin-left: 0; width: 100%; }
@@ -1384,6 +1750,14 @@
       .modal-footer { flex-direction: column; align-items: stretch; }
       .modal-buy-btn { max-width: none; }
       .edge-display .edge-value { font-size: 30px; }
+      .header-stats { grid-template-columns: repeat(2, 1fr); padding: 12px; gap: 10px; }
+    }
+
+    @media (max-width: 720px) {
+      .signal-list { grid-template-columns: 1fr; }
+      .stat-box-value { font-size: 18px; }
+      .bet-line { font-size: 18px; }
+      .player-name { max-width: none; }
     }
   </style>
 </head>
@@ -1415,6 +1789,30 @@
     <span><span class="metric-label">NETWORK:</span> <span class="metric-value ok">SEPOLIA #11155111</span></span>
   </div>
 
+  <!-- Header stats — 4 boxes (Betalytics-style) -->
+  <div class="header-stats">
+    <div class="stat-box">
+      <div class="stat-box-label">SIGNALS LISTED</div>
+      <div class="stat-box-value" id="hs_total">0</div>
+      <div class="stat-box-sub">ALL MARKETS</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">ELITE SIGNALS</div>
+      <div class="stat-box-value gold" id="hs_elite">0</div>
+      <div class="stat-box-sub">EV 20%+</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">AVG EDGE</div>
+      <div class="stat-box-value up" id="hs_avgEdge">—</div>
+      <div class="stat-box-sub">CLOSING LINE VALUE</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">MIN GRADE</div>
+      <div class="stat-box-value">20%+</div>
+      <div class="stat-box-sub">QUALITY THRESHOLD</div>
+    </div>
+  </div>
+
   <!-- Filter bar -->
   <div class="filter-bar">
     <div class="sport-tabs" id="sportTabs">
@@ -1438,6 +1836,16 @@
           <option value="Game Totals">Game Totals</option>
           <option value="Run Line">Run Line</option>
           <option value="Moneyline">Moneyline</option>
+        </select>
+      </div>
+      <div class="market-select">
+        <span class="market-label">MIN EDGE &gt;</span>
+        <select id="minEdgeFilter" class="terminal-select" style="min-width: 130px;">
+          <option value="0">Any Edge</option>
+          <option value="10">10%+</option>
+          <option value="20">20%+</option>
+          <option value="30">30%+</option>
+          <option value="50">50%+</option>
         </select>
       </div>
       <div class="search-wrapper">
@@ -1614,7 +2022,7 @@
     // CONFIGURATION — unchanged
     // =========================================================================
     const YODA_TOKEN_ADDRESS = "0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2";
-    const SIGNAL_MARKET_ADDRESS = "0xd149506D13656039084c01D5038146648e43Aa08";
+    const SIGNAL_MARKET_ADDRESS = "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73";
 
     // Sepolia chain parameters
     const SEPOLIA_CHAIN_ID_HEX = "0xaa36a7"; // 11155111
@@ -1671,6 +2079,7 @@
     let filterSport = "ALL";
     let filterMarket = "";
     let filterSearch = "";
+    let filterMinEdge = 0; // 0 = any
     let sortMode = "ev"; // ev | price | newest
 
     // Currently-open modal signal (for the buy button)
@@ -1886,6 +2295,12 @@
           if (!haystack.includes(q)) return false;
         }
 
+        // Min-edge threshold
+        if (filterMinEdge > 0) {
+          const ev = evForSignal(sig);
+          if (ev === null || isNaN(ev) || ev < filterMinEdge) return false;
+        }
+
         return true;
       });
     }
@@ -1939,6 +2354,10 @@
             sig.sport || ""
           ].join(" ").toLowerCase();
           if (!haystack.includes(q)) return false;
+        }
+        if (filterMinEdge > 0) {
+          const ev = evForSignal(sig);
+          if (ev === null || isNaN(ev) || ev < filterMinEdge) return false;
         }
         return true;
       });
@@ -2121,15 +2540,238 @@
     }
 
     // =========================================================================
+    // Bet metadata extraction (player, stat, line, pick, matchup)
+    // Works against either the full description or the previewHint, so locked
+    // signals still render meaningful headline data.
+    // =========================================================================
+    const STAT_KEYWORDS = [
+      "Total Bases", "Earned Runs", "Hits Allowed", "Outs Recorded",
+      "Total Runs", "Run Line",
+      "Strikeouts", "Rebounds", "Assists", "Points",
+      "Steals", "Blocks", "Turnovers", "Walks"
+    ];
+
+    const STAT_ABBR = {
+      "Points": "PTS", "Rebounds": "REB", "Assists": "AST",
+      "Steals": "STL", "Blocks": "BLK", "Turnovers": "TO",
+      "Strikeouts": "K", "Walks": "BB", "Hits Allowed": "HA",
+      "Earned Runs": "ER", "Outs Recorded": "OUT", "Total Bases": "TB",
+      "Total Runs": "TOT", "Run Line": "RL"
+    };
+
+    const TEAM_ABBR = {
+      // NBA
+      "Lakers":"LAL","Clippers":"LAC","Warriors":"GSW","Suns":"PHX",
+      "Rockets":"HOU","Mavericks":"DAL","Spurs":"SAS","Grizzlies":"MEM","Pelicans":"NOP",
+      "Thunder":"OKC","Nuggets":"DEN","Timberwolves":"MIN","Trail Blazers":"POR","Jazz":"UTA",
+      "Bucks":"MIL","Bulls":"CHI","Cavaliers":"CLE","Pistons":"DET","Pacers":"IND",
+      "Hawks":"ATL","Hornets":"CHA","Heat":"MIA","Magic":"ORL","Wizards":"WAS",
+      "Celtics":"BOS","Nets":"BKN","Knicks":"NYK","76ers":"PHI","Raptors":"TOR","Kings":"SAC",
+      // MLB
+      "Yankees":"NYY","Red Sox":"BOS","Blue Jays":"TOR","Orioles":"BAL","Rays":"TBR",
+      "Twins":"MIN","Tigers":"DET","White Sox":"CWS","Royals":"KCR","Guardians":"CLE",
+      "Astros":"HOU","Rangers":"TEX","Athletics":"OAK","Angels":"LAA","Mariners":"SEA",
+      "Braves":"ATL","Mets":"NYM","Phillies":"PHI","Marlins":"MIA","Nationals":"WSN",
+      "Cubs":"CHC","Brewers":"MIL","Cardinals":"STL","Pirates":"PIT","Reds":"CIN",
+      "Dodgers":"LAD","Giants":"SFG","Padres":"SDP","Rockies":"COL","Diamondbacks":"ARI",
+      // NFL
+      "Cowboys":"DAL","Eagles":"PHI","Giants":"NYG","Commanders":"WAS",
+      "Bears":"CHI","Lions":"DET","Packers":"GB","Vikings":"MIN",
+      "Falcons":"ATL","Panthers":"CAR","Saints":"NO","Buccaneers":"TB",
+      "49ers":"SF","Cardinals":"ARI","Rams":"LAR","Seahawks":"SEA",
+      "Bills":"BUF","Dolphins":"MIA","Patriots":"NE","Jets":"NYJ",
+      "Ravens":"BAL","Bengals":"CIN","Browns":"CLE","Steelers":"PIT",
+      "Texans":"HOU","Colts":"IND","Jaguars":"JAX","Titans":"TEN",
+      "Broncos":"DEN","Chiefs":"KC","Raiders":"LV","Chargers":"LAC"
+    };
+
+    function abbrTeamName(teamName) {
+      if (!teamName) return "";
+      const trimmed = teamName.trim();
+      if (!trimmed) return "";
+      const words = trimmed.split(/\s+/);
+      // Try matching last 2 words, then last 1 (e.g. "Red Sox", "Trail Blazers")
+      for (let i = Math.max(0, words.length - 2); i < words.length; i++) {
+        const candidate = words.slice(i).join(" ");
+        if (TEAM_ABBR[candidate]) return TEAM_ABBR[candidate];
+      }
+      return words[words.length - 1].slice(0, 3).toUpperCase();
+    }
+
+    function abbrMatchup(matchup) {
+      if (!matchup) return "";
+      const parts = matchup.split(/\s+at\s+/i);
+      if (parts.length === 2) {
+        return abbrTeamName(parts[0]) + " @ " + abbrTeamName(parts[1]);
+      }
+      return matchup.toUpperCase();
+    }
+
+    /**
+     * Extract player name + market metadata from a signal.
+     * The description (when available) has the bet line as its first row.
+     * The previewHint always carries a truncated version of the same bet line.
+     */
+    function extractBetMeta(sig) {
+      let betInfo = "";
+      let evPct = null;
+      let matchup = "";
+
+      // Prefer parsed description (richest source)
+      const details = parseSignalDetails(sig.description);
+      if (details.betInfo && details.betInfo !== "Purchase to unlock") {
+        betInfo = details.betInfo;
+        if (details.edgePercent !== null && !isNaN(details.edgePercent)) evPct = details.edgePercent;
+        if (details.matchup) matchup = details.matchup;
+      }
+
+      // Fallback: previewHint = "<bet_info truncated> | EV: +X.X%"
+      const hint = sig.previewHint || "";
+      if (!betInfo) {
+        const idx = hint.lastIndexOf(" | EV:");
+        let raw = idx > -1 ? hint.slice(0, idx) : hint;
+        if (raw.endsWith("...")) raw = raw.slice(0, -3);
+        betInfo = raw.trim();
+      }
+      if (evPct === null) {
+        const m = hint.match(/EV[^+\-\d]*([+\-]?[\d.]+)/i);
+        if (m) {
+          const v = parseFloat(m[1]);
+          if (!isNaN(v)) evPct = v;
+        }
+      }
+
+      // Parse: "<over|under> <line> <PLAYER NAME> <STAT> <Team A> at <Team B>"
+      let pick = "", line = "", player = "", stat = "";
+      const m = betInfo.match(/^(over|under)\s+([\d.]+)\s+(.+)$/i);
+      if (m) {
+        pick = m[1].toUpperCase();
+        line = m[2];
+        const rest = m[3];
+
+        // Find earliest stat keyword (multi-word terms checked first via list order)
+        let statIdx = -1;
+        for (const kw of STAT_KEYWORDS) {
+          const idx = rest.indexOf(kw);
+          if (idx !== -1 && (statIdx === -1 || idx < statIdx)) {
+            statIdx = idx;
+            stat = kw;
+          }
+        }
+
+        if (statIdx > -1) {
+          player = rest.slice(0, statIdx).trim();
+          if (!matchup) {
+            const after = rest.slice(statIdx + stat.length).trim();
+            if (after.includes(" at ")) matchup = after;
+          }
+        } else {
+          // No stat keyword detected — best-effort: take 2 words before " at "
+          const atIdx = rest.indexOf(" at ");
+          if (atIdx > -1) {
+            const before = rest.slice(0, atIdx).trim();
+            const words = before.split(/\s+/);
+            player = words.slice(0, 2).join(" ");
+          } else {
+            player = rest.split(/\s+/).slice(0, 2).join(" ");
+          }
+        }
+      }
+
+      return {
+        pick,
+        line,
+        player,
+        stat,
+        statAbbr: STAT_ABBR[stat] || (stat ? stat.slice(0, 3).toUpperCase() : ""),
+        evPct,
+        matchup,
+        matchupAbbr: abbrMatchup(matchup)
+      };
+    }
+
+    function tierForEv(ev) {
+      if (ev === null || ev === undefined || isNaN(ev)) return { label: "QUALITY", className: "quality" };
+      if (ev > 20) return { label: "ELITE",   className: "elite" };
+      if (ev > 10) return { label: "PREMIUM", className: "premium" };
+      return { label: "QUALITY", className: "quality" };
+    }
+
+    function starsForEv(ev) {
+      if (ev === null || ev === undefined || isNaN(ev)) return 1;
+      if (ev >= 57) return 5;
+      if (ev >= 40) return 4;
+      if (ev >= 28) return 3;
+      if (ev >= 15) return 2;
+      return 1;
+    }
+
+    function renderStarsHtml(count) {
+      let html = '<span class="stars" aria-label="' + count + ' stars">';
+      for (let i = 1; i <= 5; i++) {
+        html += i <= count ? "★" : '<span class="empty">★</span>';
+      }
+      html += "</span>";
+      return html;
+    }
+
+    function avatarUrl(playerName) {
+      const name = (playerName || "?").trim() || "?";
+      const url = "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) +
+                  "&background=1a2744&color=00D4AA&size=128&bold=true&rounded=true";
+      return url;
+    }
+
+    /**
+     * Best-effort EV extraction for filtering / aggregate stats.
+     * Returns null if we can't find any EV signal.
+     */
+    function evForSignal(sig) {
+      const d = parseSignalDetails(sig.description);
+      if (d.edgePercent !== null && !isNaN(d.edgePercent)) return d.edgePercent;
+      const hint = sig.previewHint || "";
+      const m = hint.match(/EV[^+\-\d]*([+\-]?[\d.]+)/i);
+      if (m) {
+        const v = parseFloat(m[1]);
+        if (!isNaN(v)) return v;
+      }
+      return null;
+    }
+
+    // =========================================================================
+    // Header stats bar (4 boxes — total / elite / avg edge / threshold)
+    // =========================================================================
+    function updateHeaderStats(all) {
+      if (!Array.isArray(all)) {
+        $("hs_total").textContent = "0";
+        $("hs_elite").textContent = "0";
+        $("hs_avgEdge").textContent = "—";
+        return;
+      }
+      const visible = all.filter(s => !isPlaceholderSignal(s));
+      $("hs_total").textContent = String(visible.length);
+
+      let elite = 0, sum = 0, count = 0;
+      for (const s of visible) {
+        const ev = evForSignal(s);
+        if (ev !== null) {
+          sum += ev;
+          count++;
+          if (ev >= 20) elite++;
+        }
+      }
+      $("hs_elite").textContent = String(elite);
+      $("hs_avgEdge").textContent = count > 0 ? "+" + (sum / count).toFixed(1) + "%" : "—";
+    }
+    updateHeaderStats(null);
+
+    // =========================================================================
     // Signal card rendering
     // =========================================================================
     function renderSignalCard(sig, { owned = false } = {}) {
       const card = document.createElement("div");
       const isContractOwner = userAddress && userAddress.toLowerCase() === contractOwner;
       const soldToMe = sig.sold && userAddress && sig.currentOwner.toLowerCase() === userAddress.toLowerCase();
-      // Owners see the full description for their own listings (Change 2).
-      // Masking only happens for non-owners on unsold signals.
-      const locked = !sig.sold && !isContractOwner;
       const showOwned = owned || soldToMe;
 
       card.className = "signal-card" + (sig.sold ? " sold" : "") + (showOwned ? " owned" : "");
@@ -2138,58 +2780,104 @@
       card.setAttribute("data-signal-id", sig.id.toString());
 
       const priceStr = sig.priceInYoda.toString();
-      let statusBadgeHtml;
-      if (showOwned) {
-        statusBadgeHtml = `<span class="status-badge owned">OWNED</span>`;
-      } else if (sig.sold) {
-        statusBadgeHtml = `<span class="status-badge sold">SOLD</span>`;
-      } else {
-        statusBadgeHtml = `<span class="status-badge available">AVAILABLE</span>`;
-      }
-
       const idPadded = "#" + String(sig.id).padStart(3, "0");
 
-      // Parse edge for the card display
-      const details = parseSignalDetails(sig.description);
-      const edgeDisplay = details.edgePercent !== null && !isNaN(details.edgePercent)
-        ? (details.edgePercent >= 0 ? "+" : "") + details.edgePercent.toFixed(2) + "%"
+      // Bet metadata (works for locked signals via previewHint fallback)
+      const meta = extractBetMeta(sig);
+      const ev = meta.evPct;
+      const tier = tierForEv(ev);
+      const stars = starsForEv(ev);
+      const evDisplay = (ev !== null && !isNaN(ev))
+        ? (ev >= 0 ? "+" : "") + ev.toFixed(1) + "%"
         : "—";
 
-      // Owner pill (tiny) — only if this account owns the listing as the seller
-      const ownerPillHtml = (isContractOwner && !sig.sold)
-        ? `<span class="owner-pill" title="You listed this signal">YOUR LISTING</span>`
+      const playerName = meta.player || sig.sport || "Signal";
+      const positionText = meta.statAbbr || (meta.stat ? meta.stat.toUpperCase() : "PROP");
+      const teamText = sportKey || "—";
+
+      // Title-case helper: "UNDER" -> "Under"
+      const titleCase = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+      const pickLabel = titleCase(meta.pick);
+      const statName = meta.stat || "";
+
+      // Headline bet line: "Under 9.5 Rebounds" — falls back to previewHint
+      const pickClass = meta.pick === "OVER" ? "over" : (meta.pick === "UNDER" ? "under" : "");
+      const betLineHtml = (meta.pick && meta.line)
+        ? `<span class="pick ${pickClass}">${escapeHtml(pickLabel)}</span> <span class="line-num">${escapeHtml(meta.line)}</span>${statName ? `<span class="stat-suffix">${escapeHtml(statName)}</span>` : ""}`
+        : `<span class="line-num">${escapeHtml(sig.previewHint || "—")}</span>`;
+
+      // Matchup descriptor (• Today / • Sold / • Owned)
+      let timingLabel;
+      if (showOwned)     timingLabel = "Owned";
+      else if (sig.sold) timingLabel = "Sold";
+      else               timingLabel = "Today";
+
+      // Stats grid status (title case to match Betalytics)
+      let statusLabel, statusClass;
+      if (showOwned)      { statusLabel = "Owned";     statusClass = "up"; }
+      else if (sig.sold)  { statusLabel = "Sold";      statusClass = "danger"; }
+      else                { statusLabel = "Available"; statusClass = "up"; }
+
+      const marketPillText = meta.stat || sig.market || "PROP";
+
+      // Owner corner pill
+      const ownerCornerHtml = (isContractOwner && !sig.sold)
+        ? `<span class="corner-pill" title="You listed this signal">YOUR LISTING</span>`
         : "";
 
       card.innerHTML = `
-        <div class="signal-top">
-          <div class="signal-tags">
-            <span class="sport-pill">${escapeHtml(sig.sport)}</span>
-            <span class="market-type">${escapeHtml(sig.market)}</span>
-            ${ownerPillHtml}
+        <div class="card-top">
+          <div class="card-top-left">
+            <img class="player-avatar" src="${escapeHtml(avatarUrl(playerName))}" alt="${escapeHtml(playerName)}" loading="lazy"/>
+            <div class="player-info">
+              <div class="player-name">${escapeHtml(playerName)}</div>
+              <div class="player-meta">${escapeHtml(positionText)} | ${escapeHtml(teamText)}</div>
+            </div>
           </div>
-          <span class="signal-id">${idPadded}</span>
+          <div class="card-top-right">
+            <span class="tier-badge ${tier.className}">${tier.label}</span>
+            ${renderStarsHtml(stars)}
+            ${ownerCornerHtml}
+          </div>
         </div>
-        <div class="signal-hint">${escapeHtml(sig.previewHint)}</div>
-        <div class="signal-stats">
-          <div class="stat">
-            <div class="stat-label">Price</div>
-            <div class="stat-value accent">${priceStr}<span class="unit">${escapeHtml(yodaSymbol)}</span></div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Edge %</div>
-            <div class="stat-value positive">${escapeHtml(edgeDisplay)}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Status</div>
-            <div class="stat-value">${statusBadgeHtml}</div>
-          </div>
-          <div class="stat action-slot"></div>
+        <div class="matchup-line">
+          <span class="matchup-text">${escapeHtml(meta.matchupAbbr || sig.sport || "—")}</span>
+          <span class="dot">•</span>
+          <span class="timing">${escapeHtml(timingLabel)}</span>
+          <span class="signal-id-tag">${idPadded}</span>
         </div>
-        <div class="signal-description ${locked ? "locked" : ""}">${
-          locked
-            ? "██████████████████████████████\nPurchase to decrypt signal payload.\nAccess to full market edge locked\nuntil on-chain settlement confirmed."
-            : escapeHtml(sig.description)
-        }</div>
+        <div class="market-row">
+          <span class="market-pill" title="${escapeHtml(sig.market || '')}">${escapeHtml(marketPillText)}</span>
+          <span class="sportsbook">ProphetX</span>
+        </div>
+        <div class="bet-line-row">
+          <div class="bet-line">${betLineHtml}</div>
+          <div class="edge-badge ${ev === null ? 'flat' : ''}">${escapeHtml(evDisplay)}</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-cell">
+            <div class="stat-cell-label">Line</div>
+            <div class="stat-cell-value">${escapeHtml(meta.line || "—")}</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-label">EV%</div>
+            <div class="stat-cell-value up">${escapeHtml(evDisplay)}</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-label">Pick</div>
+            <div class="stat-cell-value ${pickClass}">${escapeHtml(pickLabel || "—")}</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-label">Status</div>
+            <div class="stat-cell-value ${statusClass}">${escapeHtml(statusLabel)}</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-price">
+            <span class="price-num">${priceStr}</span><span class="currency">${escapeHtml(yodaSymbol)}</span>
+          </div>
+          <div class="action-slot"></div>
+        </div>
       `;
 
       const actionSlot = card.querySelector(".action-slot");
@@ -2199,7 +2887,7 @@
         label.textContent = showOwned ? "// YOURS" : "// SOLD OUT";
         actionSlot.appendChild(label);
       } else if (isContractOwner) {
-        // Owner's own listing: DEMO BUY (for live demo walkthrough) + SHARE
+        // Owner's own listing: DEMO BUY + SHARE
         const demoBuyBtn = document.createElement("button");
         demoBuyBtn.className = "demo-buy-btn";
         demoBuyBtn.type = "button";
@@ -2224,15 +2912,15 @@
         const buyBtn = document.createElement("button");
         buyBtn.className = "buy-btn";
         buyBtn.type = "button";
-        buyBtn.textContent = "[ BUY SIGNAL ]";
+        buyBtn.textContent = "[ BUY ]";
         buyBtn.addEventListener("click", (e) => {
-          e.stopPropagation(); // don't also open the modal
+          e.stopPropagation();
           handleBuy(sig);
         });
         actionSlot.appendChild(buyBtn);
       }
 
-      // Card click → open detail modal (Change 1). Buttons stopPropagation above.
+      // Card click → open detail modal. Buttons stopPropagation above.
       card.addEventListener("click", () => openSignalDetail(sig, { owned: showOwned }));
 
       return card;
@@ -2432,6 +3120,7 @@
         const all = await marketContract.getAllSignals();
         signalCache = Array.isArray(all) ? all.slice() : [];
         updateMetrics(signalCache);
+        updateHeaderStats(signalCache);
         renderMarketplaceFromCache();
       } catch (err) {
         console.error(err);
@@ -2561,6 +3250,13 @@
 
     marketFilterEl.addEventListener("change", () => {
       filterMarket = marketFilterEl.value;
+      renderMarketplaceFromCache();
+    });
+
+    const minEdgeFilterEl = $("minEdgeFilter");
+    minEdgeFilterEl.addEventListener("change", () => {
+      const v = parseFloat(minEdgeFilterEl.value);
+      filterMinEdge = isNaN(v) ? 0 : v;
       renderMarketplaceFromCache();
     });
 
