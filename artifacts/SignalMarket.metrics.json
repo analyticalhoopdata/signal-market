@@ -1,0 +1,220 @@
+{
+  "contract": "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73",
+  "chain": "Sepolia",
+  "chainId": 11155111,
+  "computedAt": "2026-05-02T12:19:38.544Z",
+  "txCount": 26,
+  "totalGasEth": "0.015463881296000717",
+  "averageFeeEth": "0.000594764665230796",
+  "deployTx": "0x7bd70bbd9de43be9401cb0601b1a6cda1abe1a3cc2e67374a5b6aa6ac89ecfbf",
+  "transactions": [
+    {
+      "hash": "0x7bd70bbd9de43be9401cb0601b1a6cda1abe1a3cc2e67374a5b6aa6ac89ecfbf",
+      "block": 10773276,
+      "gasUsed": "1305729",
+      "gasPrice": "1500000036",
+      "feeWei": "1958593547006244",
+      "feeEth": "0.001958593547006244"
+    },
+    {
+      "hash": "0x54670997895ed82eab63abb2f1dfd376ec1619df72158d380af8d43849fcacf9",
+      "block": 10773279,
+      "gasUsed": "436361",
+      "gasPrice": "1500000035",
+      "feeWei": "654541515272635",
+      "feeEth": "0.000654541515272635"
+    },
+    {
+      "hash": "0xfc8e8d39142efc36d65756251f0406b2ef6adc47fc5245234a943b2bd936f9c3",
+      "block": 10773280,
+      "gasUsed": "418985",
+      "gasPrice": "1500000036",
+      "feeWei": "628477515083460",
+      "feeEth": "0.00062847751508346"
+    },
+    {
+      "hash": "0x63b46690d65fd5a3d67846b26752e43cbf19f8e31bf7b8fa2f79d06fb37d2052",
+      "block": 10773281,
+      "gasUsed": "418889",
+      "gasPrice": "1500000035",
+      "feeWei": "628333514661115",
+      "feeEth": "0.000628333514661115"
+    },
+    {
+      "hash": "0xbb2e0ec0b05c43c12129112387fe38128707a2aaf18511fdb26a0c06e453f0d0",
+      "block": 10773282,
+      "gasUsed": "418937",
+      "gasPrice": "1500000035",
+      "feeWei": "628405514662795",
+      "feeEth": "0.000628405514662795"
+    },
+    {
+      "hash": "0xb7f5750171e8ae84406573314a8d757adfb4fe694b7d3b2d05b42f54b6ef5a6b",
+      "block": 10773283,
+      "gasUsed": "418985",
+      "gasPrice": "1500000034",
+      "feeWei": "628477514245490",
+      "feeEth": "0.00062847751424549"
+    },
+    {
+      "hash": "0x459ad7f4f6be3bb0c847b69a184715ad7de412fd75a102a2f37bd37b2e653800",
+      "block": 10773284,
+      "gasUsed": "441928",
+      "gasPrice": "1500000034",
+      "feeWei": "662892015025552",
+      "feeEth": "0.000662892015025552"
+    },
+    {
+      "hash": "0xd8ed263856c77cf58cdfcb2f7b3f60e31d6a9a5b0b031fcc90d55b1f5a244d45",
+      "block": 10773285,
+      "gasUsed": "441556",
+      "gasPrice": "1500000034",
+      "feeWei": "662334015012904",
+      "feeEth": "0.000662334015012904"
+    },
+    {
+      "hash": "0x04b011fe26a4c091bf4aae76d17a91d8f6200463bd143e749336a7e234066d39",
+      "block": 10773286,
+      "gasUsed": "419191",
+      "gasPrice": "1500000033",
+      "feeWei": "628786513833303",
+      "feeEth": "0.000628786513833303"
+    },
+    {
+      "hash": "0x68ded88f94ed94318a7edabe2abcac2b3246e4433ad6c7b75ce2c12eda490e7a",
+      "block": 10773287,
+      "gasUsed": "441604",
+      "gasPrice": "1500000033",
+      "feeWei": "662406014572932",
+      "feeEth": "0.000662406014572932"
+    },
+    {
+      "hash": "0x23e5dc78930ab814f53ba01b432142985ce6cbddc41f46d69349662836c75ee7",
+      "block": 10773288,
+      "gasUsed": "441844",
+      "gasPrice": "1500000033",
+      "feeWei": "662766014580852",
+      "feeEth": "0.000662766014580852"
+    },
+    {
+      "hash": "0xbe74403d2a60814518cb520fcd63ce91b7822913ca96ca6497b6d174b14ff8c1",
+      "block": 10775052,
+      "gasUsed": "419249",
+      "gasPrice": "1500000024",
+      "feeWei": "628873510061976",
+      "feeEth": "0.000628873510061976"
+    },
+    {
+      "hash": "0xfeba430c7521a7dfd71fb714f1387d6a89a5c5f99fd0f92aacdada6179a411a9",
+      "block": 10775053,
+      "gasUsed": "418973",
+      "gasPrice": "1500000023",
+      "feeWei": "628459509636379",
+      "feeEth": "0.000628459509636379"
+    },
+    {
+      "hash": "0xb356af57bf8bed73c3491d54915ed8f791df2e90fb79bff679d24a51b6f812ab",
+      "block": 10775054,
+      "gasUsed": "418877",
+      "gasPrice": "1500000021",
+      "feeWei": "628315508796417",
+      "feeEth": "0.000628315508796417"
+    },
+    {
+      "hash": "0x48d4ba371c5cf7b1bf35749e9ca67366e99fd1b5db976b8732f18dcdaccd3752",
+      "block": 10775055,
+      "gasUsed": "418925",
+      "gasPrice": "1500000022",
+      "feeWei": "628387509216350",
+      "feeEth": "0.00062838750921635"
+    },
+    {
+      "hash": "0x5e649dbb8ab7f4db7bb2cfca82aa1134e4e196dafdf2efb39df220763f638dea",
+      "block": 10775056,
+      "gasUsed": "418973",
+      "gasPrice": "1500000020",
+      "feeWei": "628459508379460",
+      "feeEth": "0.00062845950837946"
+    },
+    {
+      "hash": "0xaaaf6002787b90e3813605983a73171e5cf289664793ce3f0ef51351d31a276c",
+      "block": 10775057,
+      "gasUsed": "441916",
+      "gasPrice": "1500000022",
+      "feeWei": "662874009722152",
+      "feeEth": "0.000662874009722152"
+    },
+    {
+      "hash": "0xdb8f91efb96931fc0a91097c426b1db3fd276dabb825335803c67f98748cef9d",
+      "block": 10775058,
+      "gasUsed": "441544",
+      "gasPrice": "1500000022",
+      "feeWei": "662316009713968",
+      "feeEth": "0.000662316009713968"
+    },
+    {
+      "hash": "0x2c71c9e7ee9611705a9d38939340dc423d9076000b299f011f9054c2523c9fc7",
+      "block": 10775059,
+      "gasUsed": "419179",
+      "gasPrice": "1500000022",
+      "feeWei": "628768509221938",
+      "feeEth": "0.000628768509221938"
+    },
+    {
+      "hash": "0xc536a1dc23a099511ca1a75cff8d1c16331ab9db9f358021fea862843295e32f",
+      "block": 10775060,
+      "gasUsed": "441592",
+      "gasPrice": "1500000022",
+      "feeWei": "662388009715024",
+      "feeEth": "0.000662388009715024"
+    },
+    {
+      "hash": "0x66a9cafc02aa5e4846a9babeaeb4c07084b47afad936e94fe5954e4f9e79e69a",
+      "block": 10775061,
+      "gasUsed": "441832",
+      "gasPrice": "1500000020",
+      "feeWei": "662748008836640",
+      "feeEth": "0.00066274800883664"
+    },
+    {
+      "hash": "0xcebd2a0e2661bf6d7a0bb31d41e7304c29dfca4fa4959db2794bcf47c1f2db3a",
+      "block": 10775082,
+      "gasUsed": "99477",
+      "gasPrice": "1500000021",
+      "feeWei": "149215502089017",
+      "feeEth": "0.000149215502089017"
+    },
+    {
+      "hash": "0x1f1d0632894019eee5915d33343edde6a640c14f5ba701a6a4b3b3bcc1a30bcc",
+      "block": 10775090,
+      "gasUsed": "82377",
+      "gasPrice": "1500000020",
+      "feeWei": "123565501647540",
+      "feeEth": "0.00012356550164754"
+    },
+    {
+      "hash": "0xa79f25bbde94c06b935dd42fcd17628c6739a559f467ccfca1d4dbf60773ae52",
+      "block": 10775093,
+      "gasUsed": "82377",
+      "gasPrice": "1500000020",
+      "feeWei": "123565501647540",
+      "feeEth": "0.00012356550164754"
+    },
+    {
+      "hash": "0x2d19c79ceffc1dde608e494adb00ccf41e17c0274398efa0b3c66fb968a730a3",
+      "block": 10775129,
+      "gasUsed": "82377",
+      "gasPrice": "1500000021",
+      "feeWei": "123565501729917",
+      "feeEth": "0.000123565501729917"
+    },
+    {
+      "hash": "0xca44268716af081d1b0ad7cd996122de07b700e46203ba5dbf6942eeec564c44",
+      "block": 10775138,
+      "gasUsed": "77577",
+      "gasPrice": "1500000021",
+      "feeWei": "116365501629117",
+      "feeEth": "0.000116365501629117"
+    }
+  ]
+}

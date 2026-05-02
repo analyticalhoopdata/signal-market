@@ -134,8 +134,9 @@ function buildSignalParams(row) {
     "\nMatchup: " + matchup +
     "\nSource: ProphetX | Settled: WIN";
 
-  // Price scales with edge: min 50, ~1500x the ev decimal
-  const priceInYoda = Math.max(50, Math.round(ev * 1500));
+  // Flat 5 YODA per signal — set after Jakir's 100 YODA distribution
+  // so prices fit within the buyer's allotment (was: max(50, ev * 1500))
+  const priceInYoda = 5;
 
   return { sport, market, description, previewHint, priceInYoda };
 }

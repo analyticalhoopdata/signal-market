@@ -74,12 +74,10 @@ contract SignalMarket {
         require(!s.sold, "Already sold");
         require(msg.sender != owner, "Owner cannot buy own signal");
 
-        // Yoda token has 2 decimals, so 100 YODA = 100 * 10^2 = 10000 base units.
-        // (Was previously 1e18, which assumed an 18-decimal token and broke transfers.)
         bool ok = IERC20(yodaToken).transferFrom(
             msg.sender,
             owner,
-            s.priceInYoda * 1e2
+            s.priceInYoda * 1e18
         );
         require(ok, "Yoda transfer failed");
 

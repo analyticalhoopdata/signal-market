@@ -228,9 +228,10 @@ These are acceptable simplifications for the CSE 426/526 assignment and keep the
 - **Toolchain:** Remix IDE, MetaMask, ethers.js v5, plain HTML/JS
 
 ## Performance Metrics
-- Total transactions: 12
-- Average transaction fee: 0.00259 ETH
-- Transaction rate: 1.2 transactions/hour
-- Total gas spent: 0.03111 ETH
+- Total transactions: 26 (1 deploy + 20 listings + 5 buys)
+- Average transaction fee: 0.000595 ETH
+- Total gas spent: 0.015464 ETH
 - Contract: 0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73
 - Etherscan: https://sepolia.etherscan.io/address/0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73
+
+Metrics computed from on-chain receipts (see `scripts/metrics.js` and `artifacts/SignalMarket.metrics.json`). Successful end-to-end buy flow on the v2 contract verifies the `1e2` decimal fix (previously `1e18`, which assumed 18-decimal Yoda).

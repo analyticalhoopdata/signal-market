@@ -1,125 +1,99 @@
 #!/usr/bin/env node
 // ============================================================================
-// fundBuyer.js — Send YODA tokens from owner to buyer wallet
+// fundBuyer.js — Send YODA tokens from owner → buyer wallet
 // ============================================================================
-// Transfers YODA tokens so the buyer can purchase signals.
-// Also checks buyer's Sepolia ETH balance for gas.
-//
-// Usage:
-//   node scripts/fundBuyer.js
-//   node scripts/fundBuyer.js --amount 3000   (custom amount, default 2000)
+// Reads PRIVATE_KEY (owner) and BUYER_ADDRESS (or BUYER_PRIVATE_KEY) from .env,
+// and transfers FUND_AMOUNT_YODA whole tokens to the buyer.
 // ============================================================================
 
 require("dotenv").config();
 const { ethers } = require("ethers");
 
-// =========================================================================
-// Constants
-// =========================================================================
-const YODA_TOKEN_ADDRESS = "0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2";
 const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-const MIN_ETH_FOR_GAS = "0.005";
+const YODA_TOKEN_ADDRESS = "0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2";
+const SIGNAL_MARKET_ADDRESS = "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73";
+
+// Sized for the post-Jakir 100 YODA owner balance: send 25 YODA to the buyer
+// which covers 5 buys at the new flat 5 YODA/signal price.
+const FUND_AMOUNT_YODA = 25;
 
 const ERC20_ABI = [
-  "function transfer(address to, uint256 amount) external returns (bool)",
-  "function balanceOf(address account) view returns (uint256)",
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)",
   "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)"
+  "function transfer(address,uint256) returns (bool)"
 ];
 
-// Parse --amount flag (default 2000 YODA)
-const amountFlag = process.argv.find((a, i) => process.argv[i - 1] === "--amount");
-const AMOUNT_YODA = parseInt(amountFlag) || 2000;
-
-// =========================================================================
-// Main
-// =========================================================================
 async function main() {
   console.log("============================================================");
-  console.log("  SIGNAL//MARKET — Fund Buyer Script");
-  console.log("  Yoda Token: " + YODA_TOKEN_ADDRESS);
-  console.log("  Network:    Sepolia (" + SEPOLIA_RPC + ")");
-  console.log("============================================================\n");
+  console.log("  fundBuyer — owner → buyer YODA transfer");
+  console.log("============================================================");
 
-  // --- Validate env vars ---
-  const ownerKey = process.env.PRIVATE_KEY;
-  if (!ownerKey || ownerKey === "your_private_key_here") {
-    console.error("ERROR: Set PRIVATE_KEY in .env");
+  const pk = process.env.PRIVATE_KEY;
+  if (!pk || pk === "your_private_key_here") {
+    console.error("ERROR: PRIVATE_KEY (owner) not set in .env");
     process.exit(1);
   }
 
-  const buyerAddress = process.env.BUYER_ADDRESS;
-  if (!buyerAddress) {
-    console.error("ERROR: Set BUYER_ADDRESS in .env");
+  let buyerAddr = process.env.BUYER_ADDRESS;
+  if (!buyerAddr) {
+    const buyerPk = process.env.BUYER_PRIVATE_KEY;
+    if (!buyerPk) {
+      console.error("ERROR: Set BUYER_ADDRESS or BUYER_PRIVATE_KEY in .env");
+      process.exit(1);
+    }
+    buyerAddr = new ethers.Wallet(buyerPk).address;
+  }
+  if (!ethers.utils.isAddress(buyerAddr)) {
+    console.error("ERROR: BUYER_ADDRESS is not a valid address: " + buyerAddr);
     process.exit(1);
   }
 
-  // --- Connect ---
   const provider = new ethers.providers.JsonRpcProvider(SEPOLIA_RPC);
-  const ownerWallet = new ethers.Wallet(ownerKey, provider);
-  const yoda = new ethers.Contract(YODA_TOKEN_ADDRESS, ERC20_ABI, ownerWallet);
+  const owner = new ethers.Wallet(pk, provider);
+  const yoda = new ethers.Contract(YODA_TOKEN_ADDRESS, ERC20_ABI, owner);
 
   const decimals = await yoda.decimals();
   const symbol = await yoda.symbol();
+  const ownerBal = await yoda.balanceOf(owner.address);
+  const buyerBal = await yoda.balanceOf(buyerAddr);
 
-  console.log("Owner wallet:  ", ownerWallet.address);
-  console.log("Buyer wallet:  ", buyerAddress);
-  console.log("Token:         ", symbol, "(" + decimals + " decimals)");
-  console.log("Amount to send:", AMOUNT_YODA, symbol, "\n");
+  console.log("Owner:           " + owner.address);
+  console.log("Buyer:           " + buyerAddr);
+  console.log("YODA decimals:   " + decimals);
+  console.log("Owner balance:   " + ethers.utils.formatUnits(ownerBal, decimals) + " " + symbol);
+  console.log("Buyer balance:   " + ethers.utils.formatUnits(buyerBal, decimals) + " " + symbol);
+  console.log("Sending:         " + FUND_AMOUNT_YODA + " " + symbol);
 
-  // --- Check owner YODA balance ---
-  const ownerBalance = await yoda.balanceOf(ownerWallet.address);
-  const ownerBalFormatted = ethers.utils.formatUnits(ownerBalance, decimals);
-  console.log("Owner " + symbol + " balance:", ownerBalFormatted);
-
-  const amountWei = ethers.utils.parseUnits(String(AMOUNT_YODA), decimals);
-  if (ownerBalance.lt(amountWei)) {
-    console.error("ERROR: Owner has insufficient " + symbol + " balance.");
-    console.error("  Need: " + AMOUNT_YODA + " " + symbol);
-    console.error("  Have: " + ownerBalFormatted + " " + symbol);
+  if (owner.address.toLowerCase() === buyerAddr.toLowerCase()) {
+    console.error("ERROR: Owner and buyer addresses are identical. Configure a separate buyer wallet.");
     process.exit(1);
   }
 
-  // --- Check buyer ETH balance for gas ---
-  const buyerEth = await provider.getBalance(buyerAddress);
-  const buyerEthFormatted = ethers.utils.formatEther(buyerEth);
-  console.log("Buyer ETH balance:", buyerEthFormatted, "ETH");
+  const amountWei = ethers.BigNumber.from(FUND_AMOUNT_YODA)
+    .mul(ethers.BigNumber.from(10).pow(decimals));
 
-  if (buyerEth.lt(ethers.utils.parseEther(MIN_ETH_FOR_GAS))) {
-    console.warn("WARNING: Buyer has < " + MIN_ETH_FOR_GAS + " ETH. They may not have enough gas for transactions.");
-    console.warn("         Send Sepolia ETH to " + buyerAddress + " before buying signals.\n");
-  } else {
-    console.log("  ✓ Buyer has enough ETH for gas\n");
+  if (ownerBal.lt(amountWei)) {
+    console.error("ERROR: Owner has insufficient YODA");
+    console.error("  required: " + amountWei.toString() + " base units");
+    console.error("  have:     " + ownerBal.toString() + " base units");
+    process.exit(1);
   }
 
-  // --- Check buyer current YODA balance ---
-  const buyerYodaBefore = await yoda.balanceOf(buyerAddress);
-  console.log("Buyer " + symbol + " balance (before):", ethers.utils.formatUnits(buyerYodaBefore, decimals), "\n");
-
-  // --- Transfer YODA ---
-  console.log("Sending " + AMOUNT_YODA + " " + symbol + " to buyer...");
-
-  const tx = await yoda.transfer(buyerAddress, amountWei);
-  console.log("  TX submitted: " + tx.hash);
-
+  console.log("\nSending YODA...");
+  const tx = await yoda.transfer(buyerAddr, amountWei);
+  console.log("  tx:            " + tx.hash);
+  console.log("  waiting for confirmation...");
   const receipt = await tx.wait();
-  console.log("  ✓ Confirmed in block " + receipt.blockNumber);
-  console.log("  TX hash: " + receipt.transactionHash);
+  console.log("  ✓ confirmed in block " + receipt.blockNumber);
+  console.log("  etherscan:     https://sepolia.etherscan.io/tx/" + receipt.transactionHash);
 
-  // --- Verify ---
-  const buyerYodaAfter = await yoda.balanceOf(buyerAddress);
-  console.log("\nBuyer " + symbol + " balance (after):", ethers.utils.formatUnits(buyerYodaAfter, decimals));
-
-  console.log("\n===========================================================");
-  console.log("  === TRANSFER COMPLETE ===");
-  console.log("  Sent: " + AMOUNT_YODA + " " + symbol);
-  console.log("  To:   " + buyerAddress);
-  console.log("  TX:   " + receipt.transactionHash);
-  console.log("  Etherscan: https://sepolia.etherscan.io/tx/" + receipt.transactionHash);
-  console.log("===========================================================");
+  const newBuyerBal = await yoda.balanceOf(buyerAddr);
+  console.log("\nNew buyer balance: " + ethers.utils.formatUnits(newBuyerBal, decimals) + " " + symbol);
 }
 
 main().catch(err => {
   console.error("\nFATAL:", err.message || err);
+  if (err.error && err.error.message) console.error("  reason:", err.error.message);
   process.exit(1);
 });
