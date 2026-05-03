@@ -1,0 +1,41 @@
+name: Sync frontend → docs
+
+# Mirrors frontend/index.html → docs/index.html on every push to main.
+# GitHub Pages serves from /docs, so this keeps the deployed site in lockstep
+# with the canonical frontend file without manual `cp + commit`.
+#
+# Path filter on `frontend/index.html` (NOT `docs/`) prevents a feedback loop
+# from the auto-commit this workflow itself creates.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/index.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy frontend/index.html → docs/index.html
+        run: |
+          mkdir -p docs
+          cp frontend/index.html docs/index.html
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet docs/index.html; then
+            echo "::notice::docs/index.html already matches frontend — nothing to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git commit -m "Auto-sync docs/index.html ← frontend/index.html"
+          git push
