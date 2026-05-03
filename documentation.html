@@ -449,7 +449,7 @@ event SignalPurchased(uint indexed id, address indexed buyer, uint priceInYoda);
 <h3>Step 3: Configure the Frontend</h3>
 <p>Open <code>frontend/index.html</code> and update the two constants at the top of the script:</p>
 <pre>const YODA_TOKEN_ADDRESS = "0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2";
-const SIGNAL_MARKET_ADDRESS = "0xd149506D13656039084c01D5038146648e43Aa08";</pre>
+const SIGNAL_MARKET_ADDRESS = "0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73";</pre>
 
 <h3>Step 4: List Signals (Optional — Automated)</h3>
 <ol>
@@ -515,18 +515,17 @@ node scripts/buySignal.js 3</pre>
 
 <table>
   <tr><th>Metric</th><th>Value</th></tr>
-  <tr><td>Total Transactions</td><td>12</td></tr>
-  <tr><td>Average Transaction Fee</td><td>0.00259 ETH</td></tr>
-  <tr><td>Total Gas Spent</td><td>0.03111 ETH</td></tr>
-  <tr><td>Transaction Rate</td><td>1.2 transactions/hour</td></tr>
-  <tr><td>Signals Listed</td><td>12 (10 active, 2 placeholders)</td></tr>
-  <tr><td>Signals Sold</td><td>0 (pending buyer transactions)</td></tr>
+  <tr><td>Total Transactions</td><td>34</td></tr>
+  <tr><td>Average Transaction Fee</td><td>0.000585 ETH</td></tr>
+  <tr><td>Total Gas Spent</td><td>0.018730 ETH</td></tr>
+  <tr><td>Signals Listed</td><td>25</td></tr>
+  <tr><td>Signals Sold</td><td>7</td></tr>
   <tr><td>Contract Deployment</td><td>Sepolia Block confirmed</td></tr>
   <tr><td>Contract Verification</td><td>Verified on Sourcify + Routescan</td></tr>
 </table>
 
 <div class="info-box">
-  <strong>Note:</strong> These metrics reflect the listing phase. Additional buy transactions will increase the total count and gas expenditure. Metrics will be updated after buyer transactions are executed.
+  <strong>Note:</strong> Metrics computed from on-chain receipts on the v2 contract (<code>0x5D6Ec77a…397f73</code>) which carries the <code>1e2</code> decimal fix. The full end-to-end approve&nbsp;→&nbsp;buy flow is verified by 7 confirmed buyer purchases.
 </div>
 
 <!-- ============================================================ -->
@@ -537,9 +536,9 @@ node scripts/buySignal.js 3</pre>
 <table>
   <tr><th>Item</th><th>Address / URL</th></tr>
   <tr><td>Yoda ERC-20 Token</td><td><code>0xbd27d0b7F9fedb5A2A2C3ceF5dC9c70f3CF64Af2</code></td></tr>
-  <tr><td>SignalMarket Contract</td><td><code>0xd149506D13656039084c01D5038146648e43Aa08</code></td></tr>
+  <tr><td>SignalMarket Contract</td><td><code>0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73</code></td></tr>
   <tr><td>Owner Wallet</td><td><code>0xe7242502Fb1a6372767381b1214c2e1C4DDdE8b9</code></td></tr>
-  <tr><td>Etherscan (Contract)</td><td>sepolia.etherscan.io/address/0xd149506D13656039084c01D5038146648e43Aa08</td></tr>
+  <tr><td>Etherscan (Contract)</td><td>sepolia.etherscan.io/address/0x5D6Ec77a95Cc0A7EA6047faE8140F9128E397f73</td></tr>
   <tr><td>GitHub Repository</td><td>github.com/analyticalhoopdata/signal-market</td></tr>
   <tr><td>Live DApp</td><td><a href="https://analyticalhoopdata.github.io/signal-market/">https://analyticalhoopdata.github.io/signal-market/</a></td></tr>
   <tr><td>Network</td><td>Ethereum Sepolia (Chain ID: 11155111)</td></tr>
